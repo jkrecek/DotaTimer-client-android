@@ -8,66 +8,59 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map.Entry;
 
-import com.frca.dotatimer.MainActivity;
-
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 
-public class HttpRequestHandler extends  AsyncTask<ParameterMap, Void, String> {
+import com.frca.dotatimer.MainActivity;
 
-    private ProgressDialog dialog;
-    private Context context;
-    
-    public HttpRequestHandler(MainActivity activity)
+public class HttpRequestHandler extends AsyncTask<ParameterMap, Void, String>
+{
+
+    private final ProgressDialog dialog;
+    private final MainActivity activity;
+
+    public HttpRequestHandler(MainActivity act)
     {
-        dialog = new ProgressDialog(activity);
-        context = activity;
+        dialog = new ProgressDialog(act);
+        activity = act;
     }
 
+    @Override
     protected void onPreExecute()
     {
-       dialog.setMessage("Odesílání..");
-       dialog.show();
+        dialog.setMessage("Odesílání..");
+        dialog.show();
     }
 
+    @Override
     protected String doInBackground(ParameterMap... maps)
     {
         String parameters = getParametersFromMap(maps[0]);
 
-        Log.e("LAJNA", parameters);
-        HttpURLConnection connection;
-        OutputStreamWriter request = null;
+        String lineResponse = "";
 
-        String response = null;            
-
-        try {
+        try
+        {
             URL url = new URL(Constants.getServerHandlerURL());
-            connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setRequestMethod("POST");    
+            connection.setRequestMethod("POST");
 
-            request = new OutputStreamWriter(connection.getOutputStream());
+            OutputStreamWriter request = new OutputStreamWriter(connection.getOutputStream());
             request.write(parameters);
             request.flush();
-            request.close();            
-            
-            String line = "";               
+            request.close();
+
             InputStreamReader isr = new InputStreamReader(connection.getInputStream());
             BufferedReader reader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null)
-                sb.append(line + "\n");
+            lineResponse = reader.readLine();
 
-            response = sb.toString();
-            
             isr.close();
             reader.close();
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -76,19 +69,21 @@ public class HttpRequestHandler extends  AsyncTask<ParameterMap, Void, String> {
         else
             return "Nastal problém, data se neodeslala";
     }
-    
+
     private String getParametersFromMap(ParameterMap map)
     {
         String str = "";
         for (Entry<String, String> pair : map.entrySet())
-            str += pair.getKey() +"=" + pair.getValue() + "&";
-        
-        return str.substring(0, str.length() - 1);        
+            str += pair.getKey() + "=" + pair.getValue() + "&";
+
+        return str.substring(0, str.length() - 1);
     }
 
+    @Override
     protected void onPostExecute(String result)
     {
         dialog.dismiss();
-        Toast.makeText(context, result, Toast.LENGTH_LONG).show();
+        Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
+        activity.refreshStart();
     }
 }
