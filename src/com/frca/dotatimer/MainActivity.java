@@ -56,7 +56,6 @@ public class MainActivity extends Activity
 
     Calendar timeDatePicker;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -306,15 +305,28 @@ public class MainActivity extends Activity
     {
         timeDatePicker = Calendar.getInstance();
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            boolean handled = false;
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear,int dayOfMonth) {
+                if (handled)
+                    return;
+
+                handled = true;
+
                 timeDatePicker.set(Calendar.YEAR, year);
                 timeDatePicker.set(Calendar.MONTH, monthOfYear);
                 timeDatePicker.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
                 new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    boolean handled = false;
                     @Override
                     public void onTimeSet(TimePicker view, int hour, int minute)
                     {
+                        if (handled)
+                            return;
+
+                        handled = true;
+
                         timeDatePicker.set(Calendar.HOUR_OF_DAY, hour);
                         timeDatePicker.set(Calendar.MINUTE, minute);
                         timeDatePicker.set(Calendar.SECOND, 0);
