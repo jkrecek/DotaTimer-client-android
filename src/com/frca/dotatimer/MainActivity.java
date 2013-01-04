@@ -338,7 +338,7 @@ public class MainActivity extends Activity
                         new HttpRequestHandler(MainActivity.this).execute(params);
                     }
 
-                }, timeDatePicker.get(Calendar.HOUR), timeDatePicker.get(Calendar.MINUTE), true).show();
+                }, timeDatePicker.get(Calendar.HOUR_OF_DAY), timeDatePicker.get(Calendar.MINUTE), true).show();
             }
         }, timeDatePicker.get(Calendar.YEAR), timeDatePicker.get(Calendar.MONTH), timeDatePicker.get(Calendar.DAY_OF_MONTH)).show();
     }
