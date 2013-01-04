@@ -70,8 +70,8 @@ public class HttpRequestHandler extends  AsyncTask<ParameterMap, Void, String> {
         } catch(IOException e) {
             e.printStackTrace();
         }
-        
-        if (response == "OK")
+
+        if (lineResponse.equals("OK"))
             return "Data úspìšnì odeslána";
         else
             return "Nastal problém, data se neodeslala";
