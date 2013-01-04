@@ -277,6 +277,12 @@ public class MainActivity extends Activity
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     String deleteReason = input.getText().toString().trim();
+                    if (!Constants.isValid(deleteReason))
+                    {
+                        Toast.makeText(MainActivity.this, "Musíš uvést dùvod", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
                     ParameterMap params = new ParameterMap();
                     params.put(Constants.TAG_DELETE_REASON, deleteReason);
                     params.put(Constants.TAG_DELETE_BY, preferences.getNick());
