@@ -24,7 +24,7 @@ function run()
 function loadParameters()
 {
     $parameters = array();
-    foreach ($_GET as $key => $value)
+    foreach ($_POST as $key => $value)
         $parameters[$key] = $value;
 
     return $parameters;
