@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="app_name">DotaTimer</string>
+	<string name="menu_change_nick">Změna nicku</string>
+	<string name="no_time_set">Timer nenastaven</string>
+
+</resources>
