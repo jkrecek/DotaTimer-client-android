@@ -1,4 +1,4 @@
-package com.frca.dotatimer;
+package com.frca.dotatimer.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,17 +12,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
+import com.frca.dotatimer.MainActivity;
+import com.frca.dotatimer.R;
 import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.JSONParser;
 import com.frca.dotatimer.helper.Preferences;
 
-public class Synchronization extends AsyncTask<Void, Void, Void>
+public class DataReceiveTask extends AsyncTask<Void, Void, Void>
 {
     private final Preferences preferences;
     private final Context context;
     private List<String> changed;
 
-    public Synchronization(Context con)
+    public DataReceiveTask(Context con)
     {
         preferences = new Preferences(con);
         context = con;

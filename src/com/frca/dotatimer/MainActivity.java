@@ -29,9 +29,9 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.frca.dotatimer.helper.Constants;
-import com.frca.dotatimer.helper.HttpRequestHandler;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
+import com.frca.dotatimer.tasks.DataSendTask;
 
 public class MainActivity extends Activity
 {
@@ -52,7 +52,7 @@ public class MainActivity extends Activity
     private String mainAuthor;
     private boolean isDeleted;
 
-    static MainActivity instance;
+    public static MainActivity instance;
 
     public Preferences preferences;
 
@@ -284,7 +284,7 @@ public class MainActivity extends Activity
                     ParameterMap params = new ParameterMap();
                     params.put(Constants.TAG_DELETE_REASON, deleteReason);
                     params.put(Constants.TAG_DELETE_BY, preferences.getNick());
-                    new HttpRequestHandler(MainActivity.this).execute(params);
+                    new DataSendTask(MainActivity.this).execute(params);
                 }
             })
             .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
@@ -339,7 +339,7 @@ public class MainActivity extends Activity
                         ParameterMap params = new ParameterMap();
                         params.put(Constants.TAG_TIMER, Integer.toString(time));
                         params.put(Constants.TAG_SET_BY, preferences.getNick());
-                        new HttpRequestHandler(MainActivity.this).execute(params);
+                        new DataSendTask(MainActivity.this).execute(params);
                     }
 
                 }, timeDatePicker.get(Calendar.HOUR_OF_DAY), timeDatePicker.get(Calendar.MINUTE), true).show();
@@ -354,7 +354,7 @@ public class MainActivity extends Activity
 
     public void syncPlan()
     {
-        Intent intent = new Intent(this, SynchronizationReceiver.class);
+        Intent intent = new Intent(this, DataReceiveReceiver.class);
         PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
 
         // We want the alarm to go off 30 seconds from now.

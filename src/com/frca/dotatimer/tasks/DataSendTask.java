@@ -1,4 +1,4 @@
-package com.frca.dotatimer.helper;
+package com.frca.dotatimer.tasks;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,14 +13,16 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import com.frca.dotatimer.MainActivity;
+import com.frca.dotatimer.helper.Constants;
+import com.frca.dotatimer.helper.ParameterMap;
 
-public class HttpRequestHandler extends AsyncTask<ParameterMap, Void, String>
+public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
 {
 
     private final ProgressDialog dialog;
     private final MainActivity activity;
 
-    public HttpRequestHandler(MainActivity act)
+    public DataSendTask(MainActivity act)
     {
         dialog = new ProgressDialog(act);
         activity = act;
