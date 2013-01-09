@@ -9,6 +9,13 @@ public class Constants
     public static final String TAG_DELETE_BY = "delete_by";
     public static final String TAG_PASS = "pass";
 
+    public static final String[] RECEIVED_TAGS = {
+        Constants.TAG_TIMER,
+        Constants.TAG_SET_BY,
+        Constants.TAG_DELETE_REASON,
+        Constants.TAG_DELETE_BY
+    };
+
     public static final String HASH_PASS = "UcMsc3kYdXHi5KvhI6MRTfMxPOLfB8";
 
     public static final String PREF_OPTIONS = "options";
@@ -16,6 +23,8 @@ public class Constants
     private static final String SERVER_ROUTE = "http://himym.cz";
     private static final String SERVER_HANDLER = "handler.php";
     private static final String SERVER_JSON = "dotatimer.json";
+
+    public static final int SYNC_INVERVAL = 5; // in minutes
 
     public static String getServerHandlerURL()
     {

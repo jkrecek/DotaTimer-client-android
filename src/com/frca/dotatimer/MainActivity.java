@@ -1,18 +1,18 @@
 package com.frca.dotatimer;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +52,8 @@ public class MainActivity extends Activity
     private String mainAuthor;
     private boolean isDeleted;
 
+    static MainActivity instance;
+
     public Preferences preferences;
 
     Calendar timeDatePicker;
@@ -66,7 +68,13 @@ public class MainActivity extends Activity
 
         loadOptions();
 
-        refreshStart();
+        syncPlan();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        instance = this;
     }
 
     @Override
@@ -121,7 +129,7 @@ public class MainActivity extends Activity
 
     public void refreshValues()
     {
-        targetText = getTargetTimeString();
+        targetText = preferences.getTargetTimeString();
         isDeleted = preferences.isDeleted();
 
         if (preferences.isDeleted())
@@ -222,17 +230,6 @@ public class MainActivity extends Activity
             dialog.getButton(Dialog.BUTTON_NEGATIVE).setEnabled(false);
     }
 
-    private String getTargetTimeString()
-    {
-        long target = (long)preferences.getTimer()*1000;
-        if (target == 0)
-            return "";
-
-        Date targetDate = new Date(target);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-        return sdf.format(targetDate);
-    }
-
     private String getTargetRemaining()
     {
         long target = (long)preferences.getTimer()*1000;
@@ -304,7 +301,7 @@ public class MainActivity extends Activity
 
     public void callRefresh(View v)
     {
-        refreshStart();
+        syncPlan();
     }
 
     public void callChange(View v)
@@ -354,16 +351,24 @@ public class MainActivity extends Activity
         createDeleteDialog();
     }
 
-    public void refreshStart()
+    public void syncPlan()
     {
-        ((Button)findViewById(R.id.button_refresh)).setEnabled(false);
-        new Synchronization(this).execute();
+        Intent intent = new Intent(this, SynchronizationService.class);
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+        // We want the alarm to go off 30 seconds from now.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.add(Calendar.SECOND, 1);
+
+        // Schedule the alarm!
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), Constants.SYNC_INVERVAL * 60 * 1000, sender);
     }
 
-    public void refreshComplete()
+    public void syncComplete()
     {
         ((Button)findViewById(R.id.button_refresh)).setEnabled(true);
         onValuesChanged();
     }
-
 }

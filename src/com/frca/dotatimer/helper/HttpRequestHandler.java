@@ -84,6 +84,6 @@ public class HttpRequestHandler extends AsyncTask<ParameterMap, Void, String>
     {
         dialog.dismiss();
         Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
-        activity.refreshStart();
+        activity.syncPlan();
     }
 }
