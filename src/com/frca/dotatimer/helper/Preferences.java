@@ -56,7 +56,7 @@ public class Preferences
             edit.putInt(key, Integer.parseInt(value));
             return true;
         } catch(RuntimeException e) {
-            String current = pref.getString(key, null);
+            String current = pref.getString(key, "");
             if (current.equals(value))
                 return false;
 

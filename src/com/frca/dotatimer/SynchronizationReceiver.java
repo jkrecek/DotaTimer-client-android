@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 
-public class SynchronizationService extends BroadcastReceiver
+public class SynchronizationReceiver extends BroadcastReceiver
 {
 
     @Override

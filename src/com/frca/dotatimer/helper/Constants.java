@@ -20,7 +20,7 @@ public class Constants
 
     public static final String PREF_OPTIONS = "options";
 
-    private static final String SERVER_ROUTE = "http://himym.cz";
+    private static final String SERVER_ROUTE = "http://78.80.205.126";
     private static final String SERVER_HANDLER = "handler.php";
     private static final String SERVER_JSON = "dotatimer.json";
 

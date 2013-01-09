@@ -74,6 +74,7 @@ public class MainActivity extends Activity
     @Override
     protected void onResume()
     {
+        super.onResume();
         instance = this;
     }
 
@@ -353,7 +354,7 @@ public class MainActivity extends Activity
 
     public void syncPlan()
     {
-        Intent intent = new Intent(this, SynchronizationService.class);
+        Intent intent = new Intent(this, SynchronizationReceiver.class);
         PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
 
         // We want the alarm to go off 30 seconds from now.
