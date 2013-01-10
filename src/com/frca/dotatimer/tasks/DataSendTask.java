@@ -88,6 +88,6 @@ public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
     {
         dialog.dismiss();
         Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
-        activity.rescheduleDataReceiver();
+        activity.requestData();
     }
 }

@@ -47,8 +47,12 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
     @Override
     protected Void doInBackground(Void... arg0)
     {
+        long startMs = System.currentTimeMillis();
         JSONParser jParser = new JSONParser();
         JSONObject json = jParser.getJSONFromUrl(Constants.getServerJsonURL());
+
+        Log.d("DataReceiveTime", "JSON received in ms " + String.valueOf(System.currentTimeMillis() - startMs));
+
         if (json == null)
             return null;
 
@@ -62,8 +66,9 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
             }
         }
 
-
         preferences.commit();
+
+        Log.d("DataReceiveTime", "Handling json data in ms " + String.valueOf(System.currentTimeMillis() - startMs));
 
         return null;
     }
@@ -84,7 +89,7 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
         }
     }
 
-    public void notifyChange()
+    private void notifyChange()
     {
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);

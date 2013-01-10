@@ -32,6 +32,7 @@ import android.widget.Toast;
 import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
+import com.frca.dotatimer.tasks.DataReceiveTask;
 import com.frca.dotatimer.tasks.DataSendTask;
 
 public class MainActivity extends Activity
@@ -69,7 +70,7 @@ public class MainActivity extends Activity
 
         loadOptions();
 
-        rescheduleDataReceiver();
+        requestData();
     }
 
     @Override
@@ -341,7 +342,7 @@ public class MainActivity extends Activity
 
     public void callRefresh(View v)
     {
-        rescheduleDataReceiver();
+        requestData();
     }
 
     public void callChange(View v)
@@ -391,19 +392,18 @@ public class MainActivity extends Activity
         createDeleteDialog();
     }
 
-    public void rescheduleDataReceiver()
+    public void requestData()
     {
         Intent intent = new Intent(this, DataReceiveReceiver.class);
         PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
 
-        // We want the alarm to go off 30 seconds from now.
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.add(Calendar.SECOND, 1);
-
-        // Schedule the alarm!
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
         am.cancel(sender);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), Constants.SYNC_INVERVAL * 60 * 1000, sender);
+
+        new DataReceiveTask(this).execute();
+
+        int interval = Constants.SYNC_INVERVAL * 60 * 1000;
+        //int interval = 20 * 1000;
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, interval, sender);
     }
 }
