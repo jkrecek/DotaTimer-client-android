@@ -11,6 +11,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
+import android.widget.Button;
 
 import com.frca.dotatimer.MainActivity;
 import com.frca.dotatimer.R;
@@ -22,12 +24,24 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
 {
     private final Preferences preferences;
     private final Context context;
-    private List<String> changed;
+    private final List<String> changed = new ArrayList<String>();
 
     public DataReceiveTask(Context con)
     {
         preferences = new Preferences(con);
         context = con;
+    }
+
+    @Override
+    protected void onPreExecute()
+    {
+        Log.d("DataReceive", "Start");
+
+        if (MainActivity.instance != null)
+        {
+            MainActivity.instance.toggleLayoutContent(false);
+            ((Button)MainActivity.instance.findViewById(R.id.button_refresh)).setEnabled(false);
+        }
     }
 
     @Override
@@ -38,10 +52,16 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
         if (json == null)
             return null;
 
-        changed = new ArrayList<String>();
         for (String tag : Constants.RECEIVED_TAGS)
+        {
             if (preferences.putFromJSON(json, tag))
-                changed.add(tag);
+            {
+                String authorTag = Constants.getAuthorTag(tag);
+                if (authorTag != null && !authorTag.equals(preferences.getNick()))
+                    changed.add(tag);
+            }
+        }
+
 
         preferences.commit();
 
@@ -54,8 +74,14 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
         if (!changed.isEmpty())
             notifyChange();
 
+        Log.d("DataReceive", "Complete");
+
         if (MainActivity.instance != null)
-            MainActivity.instance.syncComplete();
+        {
+            MainActivity.instance.toggleLayoutContent(true);
+            ((Button)MainActivity.instance.findViewById(R.id.button_refresh)).setEnabled(true);
+            MainActivity.instance.onValuesChanged();
+        }
     }
 
     public void notifyChange()
@@ -66,15 +92,15 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
         String title;
         String text;
 
-        if (changed.contains(Constants.TAG_DELETE_REASON))
-        {
-            title = "Timer vypnut";
-            text = "Timer byl vypnut z dùvodu: '" + preferences.getDeleteReason() + "'";
-        }
-        else if (changed.contains(Constants.TAG_TIMER))
+        if (changed.contains(Constants.TAG_TIMER))
         {
             title = "Timer zmìnìn";
             text = "Timer byl nastaven na " + preferences.getTargetTimeString();
+        }
+        else if (changed.contains(Constants.TAG_DELETE_REASON))
+        {
+            title = "Timer vypnut";
+            text = "Timer byl vypnut z dùvodu: '" + preferences.getDeleteReason() + "'";
         }
         else
             return;
@@ -88,9 +114,6 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
                 .getNotification();
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        //noti.flags |= Notification.FLAG_AUTO_CANCEL;
-
         notificationManager.notify(0, noti);
     }
 }

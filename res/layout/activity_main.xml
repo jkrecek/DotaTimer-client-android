@@ -1,29 +1,44 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+    tools:context=".MainActivity"
+    android:orientation="vertical">
 
-	<!-- Texts -->
-    <TextView android:id="@+id/text_target" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:layout_centerHorizontal="true" android:layout_alignParentTop="true" android:text="@string/no_time_set" android:gravity="center" />
-	
-	<TextView android:id="@+id/text_main" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:layout_centerHorizontal="true" android:layout_centerVertical="true" android:textSize="25sp" android:textStyle="bold|italic" android:gravity="center" />
-	
-	<!-- Authors -->
-	<TextView android:id="@+id/text_target_author" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:layout_centerHorizontal="true" android:layout_below="@id/text_target" android:gravity="center" />
-	
-	<TextView android:id="@+id/text_main_author" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:layout_centerHorizontal="true" android:layout_below="@id/text_main" android:textStyle="bold|italic" android:gravity="center" />
+    <!-- Default View -->
+    <RelativeLayout android:id="@+id/layout_content" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <!-- Texts -->
+        <TextView android:id="@+id/text_target" android:layout_width="wrap_content" android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true" android:layout_alignParentTop="true" android:text="@string/no_time_set" android:gravity="center" />
+        
+        <TextView android:id="@+id/text_main" android:layout_width="wrap_content" android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true" android:layout_centerVertical="true" android:textSize="25sp" android:textStyle="bold|italic" android:gravity="center" />
+        
+        <!-- Authors -->
+        <TextView android:id="@+id/text_target_author" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true" android:layout_below="@id/text_target" android:gravity="center" />
+        
+        <TextView android:id="@+id/text_main_author" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true" android:layout_below="@id/text_main" android:textStyle="bold|italic" android:gravity="center" />
+    </RelativeLayout>
+    
+    <!-- Loading View -->
+    <RelativeLayout android:id="@+id/layout_loading" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:visibility="gone" >
+        <LinearLayout android:layout_height="wrap_content" android:layout_width="wrap_content" android:gravity="center"
+            android:layout_centerHorizontal="true" android:layout_centerVertical="true" >
+            
+            <ProgressBar android:layout_width="wrap_content" android:layout_height="wrap_content" />        
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                 android:text="Načítání" android:paddingLeft="7dp" />
+            
+        </LinearLayout>
+    </RelativeLayout>
+    
+    <!-- Bottom Buttons -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" >
+        <Button android:id="@+id/button_refresh" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Obnovit" android:onClick="callRefresh"/>
+        <Button android:id="@+id/button_change" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Změnit" android:onClick="callChange"/>
+        <Button android:id="@+id/button_delete" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Vypnout" android:onClick="callDelete"/>
+    </LinearLayout>
 
-	<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_alignParentBottom="true">
-		<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-			<Button android:id="@+id/button_refresh" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Obnovit" android:onClick="callRefresh"/>
-			<Button android:id="@+id/button_change" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Změnit" android:onClick="callChange"/>
-			<Button android:id="@+id/button_delete" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Vypnout" android:onClick="callDelete"/>
-		</LinearLayout>
-	</RelativeLayout>
-
-</RelativeLayout>
+</LinearLayout>

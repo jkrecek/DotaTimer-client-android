@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.frca.dotatimer.MainActivity;
@@ -66,6 +67,7 @@ public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
             e.printStackTrace();
         }
 
+        Log.d("response", lineResponse);
         if (lineResponse.equals("OK"))
             return "Data úspìšnì odeslána";
         else
@@ -86,6 +88,6 @@ public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
     {
         dialog.dismiss();
         Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
-        activity.syncPlan();
+        activity.rescheduleDataReceiver();
     }
 }

@@ -1,5 +1,10 @@
 package com.frca.dotatimer.helper;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class Constants
 {
     public static final String TAG_NICK = "nick";
@@ -16,11 +21,21 @@ public class Constants
         Constants.TAG_DELETE_BY
     };
 
+    public static final Map<String, String> RECEIVED_VALUES_PAIRS;
+
+    static
+    {
+        Map<String, String> aMap = new HashMap<String, String>();
+        aMap.put(Constants.TAG_TIMER, Constants.TAG_SET_BY);
+        aMap.put(Constants.TAG_DELETE_REASON, Constants.TAG_DELETE_BY);
+        RECEIVED_VALUES_PAIRS = Collections.unmodifiableMap(aMap);
+    }
+
     public static final String HASH_PASS = "UcMsc3kYdXHi5KvhI6MRTfMxPOLfB8";
 
     public static final String PREF_OPTIONS = "options";
 
-    private static final String SERVER_ROUTE = "http://78.80.205.126";
+    private static final String SERVER_ROUTE = "http://dotatimer.himym.cz";
     private static final String SERVER_HANDLER = "handler.php";
     private static final String SERVER_JSON = "dotatimer.json";
 
@@ -93,4 +108,25 @@ public class Constants
         return str != null && !str.equals("");
     }
 
+    public static boolean isValueTag(String tag)
+    {
+        if (Constants.isValid(tag))
+            for (String _tag : RECEIVED_VALUES_PAIRS.keySet())
+                if (tag.equals(_tag))
+                    return true;
+
+        return false;
+    }
+
+    public static String getAuthorTag(String tag)
+    {
+        if (!Constants.isValid(tag))
+            return null;
+
+        for (Entry<String, String> entry : RECEIVED_VALUES_PAIRS.entrySet())
+            if (tag.equals(entry.getKey()))
+                return entry.getValue();
+
+        return null;
+    }
 }

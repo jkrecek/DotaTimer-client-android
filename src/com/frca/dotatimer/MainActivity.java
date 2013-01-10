@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -35,7 +36,7 @@ import com.frca.dotatimer.tasks.DataSendTask;
 
 public class MainActivity extends Activity
 {
-    private final Timer timer = new Timer();
+    private Timer timer = new Timer();
     private final Handler handler = new Handler();
     private final Runnable runnable = new Runnable()
     {
@@ -68,14 +69,27 @@ public class MainActivity extends Activity
 
         loadOptions();
 
-        syncPlan();
+        rescheduleDataReceiver();
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
+
         instance = this;
+
+        scheduleCountdownUpdate();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+
+        instance = null;
+
+        disableCountdownUpdate();
     }
 
     @Override
@@ -98,25 +112,30 @@ public class MainActivity extends Activity
         }
     }
 
-    private void onValuesChanged()
+    public void onValuesChanged()
     {
         Button deleteButton = (Button)findViewById(R.id.button_delete);
         if (preferences.getTimer() != 0 && !preferences.isDeleted())
         {
-            planRefresh();
+            scheduleCountdownUpdate();
             deleteButton.setEnabled(true);
         }
         else
         {
-            timer.cancel();
+            disableCountdownUpdate();
             deleteButton.setEnabled(false);
+
             refreshValues();
             refreshLayout();
         }
     }
 
-    public void planRefresh()
+    public void scheduleCountdownUpdate()
     {
+        if (timer != null)
+            disableCountdownUpdate();
+
+        timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run()
@@ -125,7 +144,28 @@ public class MainActivity extends Activity
                 handler.post(runnable);
             }
         }, 0, 1000);
+    }
 
+    public void disableCountdownUpdate()
+    {
+        timer.cancel();
+        timer = null;
+    }
+
+    public void toggleLayoutContent(boolean show)
+    {
+        RelativeLayout content = (RelativeLayout)findViewById(R.id.layout_content);
+        RelativeLayout loading = (RelativeLayout)findViewById(R.id.layout_loading);
+        if (show)
+        {
+            content.setVisibility(View.VISIBLE);
+            loading.setVisibility(View.GONE);
+        }
+        else
+        {
+            content.setVisibility(View.GONE);
+            loading.setVisibility(View.VISIBLE);
+        }
     }
 
     public void refreshValues()
@@ -212,7 +252,6 @@ public class MainActivity extends Activity
                     }
                     else
                         Toast.makeText(MainActivity.this, "Neplatný nick", Toast.LENGTH_LONG).show();
-
                 }
             })
             .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
@@ -302,7 +341,7 @@ public class MainActivity extends Activity
 
     public void callRefresh(View v)
     {
-        syncPlan();
+        rescheduleDataReceiver();
     }
 
     public void callChange(View v)
@@ -352,7 +391,7 @@ public class MainActivity extends Activity
         createDeleteDialog();
     }
 
-    public void syncPlan()
+    public void rescheduleDataReceiver()
     {
         Intent intent = new Intent(this, DataReceiveReceiver.class);
         PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
@@ -364,12 +403,7 @@ public class MainActivity extends Activity
 
         // Schedule the alarm!
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        am.cancel(sender);
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), Constants.SYNC_INVERVAL * 60 * 1000, sender);
-    }
-
-    public void syncComplete()
-    {
-        ((Button)findViewById(R.id.button_refresh)).setEnabled(true);
-        onValuesChanged();
     }
 }
