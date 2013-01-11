@@ -10,7 +10,6 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
-import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
@@ -21,17 +20,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
+import com.frca.dotatimer.implementations.TimerDatePickerDialog;
 import com.frca.dotatimer.tasks.DataReceiveTask;
 import com.frca.dotatimer.tasks.DataSendTask;
 
@@ -66,7 +63,7 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        preferences = new Preferences(this);
+        preferences = Constants.getPreferences(this);
 
         loadOptions();
 
@@ -155,18 +152,11 @@ public class MainActivity extends Activity
 
     public void toggleLayoutContent(boolean show)
     {
-        RelativeLayout content = (RelativeLayout)findViewById(R.id.layout_content);
-        RelativeLayout loading = (RelativeLayout)findViewById(R.id.layout_loading);
+        LinearLayout loading = (LinearLayout)findViewById(R.id.layout_loading);
         if (show)
-        {
-            content.setVisibility(View.VISIBLE);
             loading.setVisibility(View.GONE);
-        }
         else
-        {
-            content.setVisibility(View.GONE);
             loading.setVisibility(View.VISIBLE);
-        }
     }
 
     public void refreshValues()
@@ -321,9 +311,8 @@ public class MainActivity extends Activity
                         return;
                     }
 
-                    ParameterMap params = new ParameterMap();
+                    ParameterMap params = new ParameterMap(MainActivity.this);
                     params.put(Constants.TAG_DELETE_REASON, deleteReason);
-                    params.put(Constants.TAG_DELETE_BY, preferences.getNick());
                     new DataSendTask(MainActivity.this).execute(params);
                 }
             })
@@ -348,43 +337,8 @@ public class MainActivity extends Activity
     public void callChange(View v)
     {
         timeDatePicker = Calendar.getInstance();
-        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            boolean handled = false;
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear,int dayOfMonth) {
-                if (handled)
-                    return;
-
-                handled = true;
-
-                timeDatePicker.set(Calendar.YEAR, year);
-                timeDatePicker.set(Calendar.MONTH, monthOfYear);
-                timeDatePicker.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-                new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                    boolean handled = false;
-                    @Override
-                    public void onTimeSet(TimePicker view, int hour, int minute)
-                    {
-                        if (handled)
-                            return;
-
-                        handled = true;
-
-                        timeDatePicker.set(Calendar.HOUR_OF_DAY, hour);
-                        timeDatePicker.set(Calendar.MINUTE, minute);
-                        timeDatePicker.set(Calendar.SECOND, 0);
-
-                        int time = (int) (timeDatePicker.getTimeInMillis()/1000);
-                        ParameterMap params = new ParameterMap();
-                        params.put(Constants.TAG_TIMER, Integer.toString(time));
-                        params.put(Constants.TAG_SET_BY, preferences.getNick());
-                        new DataSendTask(MainActivity.this).execute(params);
-                    }
-
-                }, timeDatePicker.get(Calendar.HOUR_OF_DAY), timeDatePicker.get(Calendar.MINUTE), true).show();
-            }
-        }, timeDatePicker.get(Calendar.YEAR), timeDatePicker.get(Calendar.MONTH), timeDatePicker.get(Calendar.DAY_OF_MONTH)).show();
+        new DatePickerDialog(this, new TimerDatePickerDialog(this, timeDatePicker),
+            timeDatePicker.get(Calendar.YEAR), timeDatePicker.get(Calendar.MONTH), timeDatePicker.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     public void callDelete(View v)

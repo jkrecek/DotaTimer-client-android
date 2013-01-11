@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import android.content.Context;
+
 public class Constants
 {
     public static final String TAG_NICK = "nick";
@@ -116,6 +118,16 @@ public class Constants
                     return true;
 
         return false;
+    }
+
+    public static Preferences preferences;
+
+    public static Preferences getPreferences(Context context)
+    {
+        if (preferences == null)
+            preferences = new Preferences(context);
+
+        return preferences;
     }
 
     public static String getAuthorTag(String tag)

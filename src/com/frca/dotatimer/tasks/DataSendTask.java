@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Map.Entry;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,14 +20,13 @@ import com.frca.dotatimer.helper.ParameterMap;
 
 public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
 {
-
     private final ProgressDialog dialog;
-    private final MainActivity activity;
+    //private final Context context;
 
-    public DataSendTask(MainActivity act)
+    public DataSendTask(Context con)
     {
-        dialog = new ProgressDialog(act);
-        activity = act;
+        dialog = new ProgressDialog(con);
+        //context = con;
     }
 
     @Override
@@ -87,7 +87,10 @@ public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
     protected void onPostExecute(String result)
     {
         dialog.dismiss();
-        Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
-        activity.requestData();
+        if (MainActivity.instance != null)
+        {
+            Toast.makeText(MainActivity.instance, result, Toast.LENGTH_LONG).show();
+            MainActivity.instance.requestData();
+        }
     }
 }

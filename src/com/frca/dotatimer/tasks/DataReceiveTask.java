@@ -28,7 +28,7 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
 
     public DataReceiveTask(Context con)
     {
-        preferences = new Preferences(con);
+        preferences = Constants.getPreferences(con);
         context = con;
     }
 
