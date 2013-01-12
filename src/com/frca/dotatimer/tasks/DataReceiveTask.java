@@ -1,15 +1,12 @@
 package com.frca.dotatimer.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.json.JSONObject;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Button;
@@ -18,18 +15,18 @@ import com.frca.dotatimer.MainActivity;
 import com.frca.dotatimer.R;
 import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.JSONParser;
-import com.frca.dotatimer.helper.Preferences;
+import com.frca.dotatimer.helper.NotificationDataHolder;
+import com.frca.dotatimer.helper.TimerData;
 
 public class DataReceiveTask extends AsyncTask<Void, Void, Void>
 {
-    private final Preferences preferences;
     private final Context context;
-    private final List<String> changed = new ArrayList<String>();
+    private final TimerData data;
 
-    public DataReceiveTask(Context con)
+    public DataReceiveTask(Context con, TimerData originData)
     {
-        preferences = Constants.getPreferences(con);
         context = con;
+        data = originData;
     }
 
     @Override
@@ -53,20 +50,12 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
 
         Log.d("DataReceiveTime", "JSON received in ms " + String.valueOf(System.currentTimeMillis() - startMs));
 
-        if (json == null)
-            return null;
+        saveJSONtoFile(json);
 
-        for (String tag : Constants.RECEIVED_TAGS)
-        {
-            if (preferences.putFromJSON(json, tag))
-            {
-                String authorTag = Constants.getAuthorTag(tag);
-                if (authorTag != null && !authorTag.equals(preferences.getNick()))
-                    changed.add(tag);
-            }
-        }
+        Log.d("DataReceiveTime", "JSON saved into file in ms " + String.valueOf(System.currentTimeMillis() - startMs));
 
-        preferences.commit();
+        NotificationDataHolder.unset();
+        data.parseJSON(json);
 
         Log.d("DataReceiveTime", "Handling json data in ms " + String.valueOf(System.currentTimeMillis() - startMs));
 
@@ -76,10 +65,9 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
     @Override
     protected void onPostExecute(Void arg)
     {
-        if (!changed.isEmpty())
-            notifyChange();
-
         Log.d("DataReceive", "Complete");
+
+        NotificationDataHolder.show(context);
 
         if (MainActivity.instance != null)
         {
@@ -89,36 +77,18 @@ public class DataReceiveTask extends AsyncTask<Void, Void, Void>
         }
     }
 
-    private void notifyChange()
+    private void saveJSONtoFile(JSONObject json)
     {
-        Intent intent = new Intent(context, MainActivity.class);
-        PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        String channelName = JSONParser.getStringOrNull(json, TimerData.TAG_CHANNEL_NAME);
 
-        String title;
-        String text;
-
-        if (changed.contains(Constants.TAG_TIMER))
-        {
-            title = "Timer zmìnìn";
-            text = "Timer byl nastaven na " + preferences.getTargetTimeString();
+        try {
+            FileOutputStream fos = context.openFileOutput(channelName+".json", Context.MODE_PRIVATE);
+            fos.write(json.toString().getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d("DataReceiveTask", "Cannot write, file was not found");
+        } catch (IOException e) {
+            Log.d("DataReceiveTask", "Error while writing into file");
         }
-        else if (changed.contains(Constants.TAG_DELETE_REASON))
-        {
-            title = "Timer vypnut";
-            text = "Timer byl vypnut z dùvodu: '" + preferences.getDeleteReason() + "'";
-        }
-        else
-            return;
-
-        Notification noti = new Notification.Builder(context)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setContentIntent(pIntent)
-                .setAutoCancel(true)
-                .getNotification();
-
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, noti);
     }
 }

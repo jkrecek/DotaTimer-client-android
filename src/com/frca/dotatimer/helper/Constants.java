@@ -1,15 +1,13 @@
 package com.frca.dotatimer.helper;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 
 public class Constants
 {
-    public static final String TAG_NICK = "nick";
+    /*public static final String TAG_NICK = "nick";
     public static final String TAG_TIMER = "timer";
     public static final String TAG_SET_BY = "set_by";
     public static final String TAG_DELETE_REASON = "delete_reason";
@@ -31,7 +29,7 @@ public class Constants
         aMap.put(Constants.TAG_TIMER, Constants.TAG_SET_BY);
         aMap.put(Constants.TAG_DELETE_REASON, Constants.TAG_DELETE_BY);
         RECEIVED_VALUES_PAIRS = Collections.unmodifiableMap(aMap);
-    }
+    }*/
 
     public static final String HASH_PASS = "UcMsc3kYdXHi5KvhI6MRTfMxPOLfB8";
 
@@ -110,7 +108,7 @@ public class Constants
         return str != null && !str.equals("");
     }
 
-    public static boolean isValueTag(String tag)
+    /*public static boolean isValueTag(String tag)
     {
         if (Constants.isValid(tag))
             for (String _tag : RECEIVED_VALUES_PAIRS.keySet())
@@ -118,6 +116,25 @@ public class Constants
                     return true;
 
         return false;
+    }*/
+
+    public static List<TimerData> datas = new ArrayList<TimerData>();
+
+    public static TimerData getTimerData(Context context, String channelName)
+    {
+        for (TimerData data : datas)
+            if (data.channelName.equals(channelName))
+                return data;
+
+        TimerData newData = TimerData.fromFile(context, channelName);
+        datas.add(newData);
+        return newData;
+    }
+
+    public static TimerData getFirstTimerData(Context context)
+    {
+        return getTimerData(context, getPreferences(context).getChannelName());
+
     }
 
     public static Preferences preferences;
@@ -130,7 +147,7 @@ public class Constants
         return preferences;
     }
 
-    public static String getAuthorTag(String tag)
+    /*public static String getAuthorTag(String tag)
     {
         if (!Constants.isValid(tag))
             return null;
@@ -140,5 +157,5 @@ public class Constants
                 return entry.getValue();
 
         return null;
-    }
+    }*/
 }

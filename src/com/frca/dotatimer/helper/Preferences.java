@@ -1,9 +1,5 @@
 package com.frca.dotatimer.helper;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -90,42 +86,17 @@ public class Preferences
 
     public String getNick()
     {
-        return getString(Constants.TAG_NICK);
+        return getString(TimerData.TAG_NICK);
     }
 
-    public int getTimer()
+    public String getChannelName()
     {
-        return getInt(Constants.TAG_TIMER);
+        return getString(TimerData.TAG_CHANNEL_NAME);
     }
 
-    public String getTargetTimeString()
+    public String getChannelPass()
     {
-        long miliseconds = (long)getTimer()*1000;
-        if (miliseconds == 0)
-            return "";
-
-        Date targetDate = new Date(miliseconds);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-        return sdf.format(targetDate);
+        return getString(TimerData.TAG_CHANNEL_PASS);
     }
 
-    public String getSetBy()
-    {
-        return getString(Constants.TAG_SET_BY);
-    }
-
-    public String getDeleteReason()
-    {
-        return getString(Constants.TAG_DELETE_REASON);
-    }
-
-    public String getDeleteBy()
-    {
-        return getString(Constants.TAG_DELETE_BY);
-    }
-
-    public boolean isDeleted()
-    {
-        return Constants.isValid(getDeleteReason());
-    }
 }

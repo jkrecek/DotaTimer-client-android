@@ -15,7 +15,6 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.format.Time;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +27,7 @@ import android.widget.Toast;
 import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
+import com.frca.dotatimer.helper.TimerData;
 import com.frca.dotatimer.implementations.TimerDatePickerDialog;
 import com.frca.dotatimer.tasks.DataReceiveTask;
 import com.frca.dotatimer.tasks.DataSendTask;
@@ -51,6 +51,7 @@ public class MainActivity extends Activity
     private String mainAuthor;
     private boolean isDeleted;
 
+    private TimerData data;
     public static MainActivity instance;
 
     public Preferences preferences;
@@ -113,7 +114,7 @@ public class MainActivity extends Activity
     public void onValuesChanged()
     {
         Button deleteButton = (Button)findViewById(R.id.button_delete);
-        if (preferences.getTimer() != 0 && !preferences.isDeleted())
+        if (data.timer.date != null && !data.isDeleted())
         {
             scheduleCountdownUpdate();
             deleteButton.setEnabled(true);
@@ -161,22 +162,21 @@ public class MainActivity extends Activity
 
     public void refreshValues()
     {
-        targetText = preferences.getTargetTimeString();
-        isDeleted = preferences.isDeleted();
+        targetText = data.getTimerString();
+        isDeleted = data.isDeleted();
 
-        if (preferences.isDeleted())
+        if (data.isDeleted())
         {
-            mainText = preferences.getDeleteReason();
-            targetAuthor = preferences.getSetBy();
-            mainAuthor = preferences.getDeleteBy();
+            targetAuthor = data.timer.nick;
+            mainText = data.delete.value;
+            mainAuthor = data.delete.nick;
         }
         else
         {
-            mainText = getTargetRemaining();
+            mainText = data.getRemainingString();
             targetAuthor = null;
-            mainAuthor = preferences.getSetBy();
+            mainAuthor = data.timer.nick;
         }
-
     }
 
     public void refreshLayout()
@@ -238,7 +238,7 @@ public class MainActivity extends Activity
                     String new_nick = input.getText().toString().trim();
                     if (new_nick != "")
                     {
-                        preferences.putAndCommit(Constants.TAG_NICK, new_nick);
+                        preferences.putAndCommit(TimerData.TAG_NICK, new_nick);
                         Toast.makeText(MainActivity.this, "Nick zmìnìn na: " + preferences.getNick(), Toast.LENGTH_LONG).show();
                     }
                     else
@@ -259,32 +259,6 @@ public class MainActivity extends Activity
         dialog.show();
         if (preferences.getNick() == null)
             dialog.getButton(Dialog.BUTTON_NEGATIVE).setEnabled(false);
-    }
-
-    private String getTargetRemaining()
-    {
-        long target = (long)preferences.getTimer()*1000;
-        if (target == 0)
-            return "";
-
-        Time timeTarget = new Time();
-        timeTarget.set(target);
-
-        Time timeNow = new Time();
-        timeNow.setToNow();
-        long comp = timeTarget.toMillis(true)-timeNow.toMillis(true);
-        return timePassed((int)(comp/1000));
-    }
-
-    private static String timePassed(int time)
-    {
-        boolean positive = time >= 0;
-        if (!positive)
-            time *= -1;
-
-        String value = Constants.toHumanReadable(time);
-        String prepand = positive ? "Zbývá" : "Uplynulo";
-        return prepand + " " + value;
     }
 
     private void createDeleteDialog()
@@ -312,7 +286,7 @@ public class MainActivity extends Activity
                     }
 
                     ParameterMap params = new ParameterMap(MainActivity.this);
-                    params.put(Constants.TAG_DELETE_REASON, deleteReason);
+                    params.put(TimerData.TAG_DELETE, deleteReason);
                     new DataSendTask(MainActivity.this).execute(params);
                 }
             })
@@ -354,7 +328,7 @@ public class MainActivity extends Activity
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
         am.cancel(sender);
 
-        new DataReceiveTask(this).execute();
+        new DataReceiveTask(this, data).execute();
 
         int interval = Constants.SYNC_INVERVAL * 60 * 1000;
         //int interval = 20 * 1000;
