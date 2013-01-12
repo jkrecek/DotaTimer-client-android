@@ -130,8 +130,7 @@ public class TimerData
             StringBuffer fileContent = new StringBuffer("");
 
             byte[] buffer = new byte[1024];
-            int length;
-            while ((length = fis.read(buffer)) != -1)
+            while (fis.read(buffer) != -1)
                 fileContent.append(new String(buffer));
 
             String json = fileContent.toString();
