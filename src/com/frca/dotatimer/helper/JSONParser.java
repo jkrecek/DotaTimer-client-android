@@ -72,46 +72,45 @@ public class JSONParser {
         return jObj;
     }
 
+    /***********************/
+    /*** PARSING HELPERS ***/
+    /***********************/
     public static String getStringOrNull(JSONObject json, String key)
     {
-        try
-        {
+        try {
             return json.getString(key);
-        } catch (JSONException e)
-        {
+        } catch (JSONException e) {
+            Log.d("JSONParser", "Unable to parse string from value '"+key+"'");
             return null;
         }
     }
 
     public static int getIntOrNil(JSONObject json, String key)
     {
-        try
-        {
+        try {
             return json.getInt(key);
-        } catch (JSONException e)
-        {
+        } catch (JSONException e) {
+            Log.d("JSONParser", "Unable to parse int from value '"+key+"'");
             return 0;
         }
     }
 
     public static JSONObject getJSONOrNull(JSONObject json, String key)
     {
-        try
-        {
+        try {
             return json.getJSONObject(key);
-        } catch (JSONException e)
-        {
+        } catch (JSONException e) {
+            Log.d("JSONParser", "Unable to parse JSON from value '"+key+"'");
             return null;
         }
     }
 
     public static JSONArray getJSONArrOrNull(JSONObject json, String key)
     {
-        try
-        {
+        try {
             return json.getJSONArray(key);
-        } catch (JSONException e)
-        {
+        } catch (JSONException e) {
+            Log.d("JSONParser", "Unable to parse JSONArray from value '"+key+"'");
             return null;
         }
     }
