@@ -65,7 +65,7 @@ class DataPresenter extends \BasePresenter {
         try {
             $this->password = $this->setFromRequest($request);
         } catch (\Nette\Application\ForbiddenRequestException $e) {
-            $this->redirect(400, "Error:400");
+            $this->redirect(400, "Error:", 400);
         }
     }
     private function checkPassword() {
