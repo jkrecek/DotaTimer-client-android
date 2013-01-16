@@ -12,6 +12,8 @@ class DataPresenter extends \BasePresenter {
     private $nick;
     private $password;
 
+    private $requestContainer;
+
     public static $instance;
 
     public function startup() {
@@ -54,12 +56,27 @@ class DataPresenter extends \BasePresenter {
     }
 
     public function actionUpdate($format, $data, $id, $query = array(), $associations = array()) {
-        $this->setInitial($id, $data);
+        try {
+            $this->setInitial($id, $data);
+
+            $this->loadLocalJSON();
+            $this->checkPassword();
+
+            $this->addDataToJson($this->json, self::createUserData($this->nick, "", ""));
+            $this->saveJson();
+
+            ApiResponser::returnCreated();
+        } catch (ForbiddenRequestException $e) {
+            ApiResponser::returnForbidden($e->getMessage());
+        } catch (BadRequestException $e) {
+            ApiResponser::returnBadRequest($e->getMessage());
+        }
     }
 
 
     private function setInitial($id, $request) {
         if (is_array($request)) {
+            $this->requestContainer = $request;
             $this->id = $id;
 
             if (!array_key_exists(Tags::$TAG_CHANNEL_PASS, $request))
@@ -70,21 +87,20 @@ class DataPresenter extends \BasePresenter {
                 throw new BadRequestException("Array: Author nick is required.");
             $this->nick = $request[Tags::$TAG_NICK];
 
-        } elseif(is_string($request) && is_object($data = json_decode($request))) {
-            $fieldId = Tags::$TAG_CHANNEL_NAME;
-            if (!isset($data->$fieldId))
+        } elseif(is_string($request) &&
+                is_object($this->requestContainer = json_decode($request))) {
+
+            $this->id = self::getVar($this->requestContainer, Tags::$TAG_CHANNEL_NAME);
+            if (!$this->id)
                 throw new ForbiddenRequestException("JSON: Id is required.");
-            $this->id = $data->$fieldId;
 
-            $fieldPass = Tags::$TAG_CHANNEL_PASS;
-            if (!isset($data->$fieldPass))
+            $this->password = self::getVar($this->requestContainer, Tags::$TAG_CHANNEL_PASS);
+            if (!$this->password)
                 throw new ForbiddenRequestException("JSON: Password is required.");
-            $this->password = $data->$fieldPass;
 
-            $fieldNick = Tags::$TAG_NICK;
-            if (!isset($data->$fieldNick))
+            $this->nick = self::getVar($this->requestContainer, Tags::$TAG_NICK);
+            if (!$this->nick)
                 throw new BadRequestException("JSON: Author nick is required.");
-            $this->nick = $data->$fieldNick;
         }
         else
             throw new BadRequestException("Bad values supplied.");
@@ -147,7 +163,10 @@ class DataPresenter extends \BasePresenter {
     }
 
     private static function getVar($stdClass, $variableName) {
-        return $stdClass->$variableName;
+        if (isset($stdClass->$variableName))
+            return $stdClass->$variableName;
+        else
+            return NULL;
     }
 
     private function addDataToJson($json, $userJson) {
