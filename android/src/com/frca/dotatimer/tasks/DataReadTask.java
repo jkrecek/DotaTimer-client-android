@@ -18,12 +18,12 @@ import com.frca.dotatimer.helper.JSONParser;
 import com.frca.dotatimer.helper.NotificationDataHolder;
 import com.frca.dotatimer.helper.TimerData;
 
-public class DataReceiveTask extends AsyncTask<Void, Void, Void>
+public class DataReadTask extends AsyncTask<Void, Void, Void>
 {
     private final Context context;
     private final TimerData data;
 
-    public DataReceiveTask(Context con, TimerData originData)
+    public DataReadTask(Context con, TimerData originData)
     {
         context = con;
         data = originData;

@@ -8,7 +8,7 @@ import android.widget.TimePicker;
 
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.TimerData;
-import com.frca.dotatimer.tasks.DataSendTask;
+import com.frca.dotatimer.tasks.DataUpdateTask;
 
 public class TimerTimePickerDialog implements TimePickerDialog.OnTimeSetListener
 {
@@ -38,6 +38,6 @@ public class TimerTimePickerDialog implements TimePickerDialog.OnTimeSetListener
         int time = (int) (timerPicker.getTimeInMillis()/1000);
         ParameterMap params = new ParameterMap(context);
         params.put(TimerData.TAG_TIMER, Integer.toString(time));
-        new DataSendTask(context).execute(params);
+        new DataUpdateTask(context).execute(params);
     }
 }

@@ -29,8 +29,8 @@ import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
 import com.frca.dotatimer.helper.TimerData;
 import com.frca.dotatimer.implementations.TimerDatePickerDialog;
-import com.frca.dotatimer.tasks.DataReceiveTask;
-import com.frca.dotatimer.tasks.DataSendTask;
+import com.frca.dotatimer.tasks.DataReadTask;
+import com.frca.dotatimer.tasks.DataUpdateTask;
 
 public class MainActivity extends Activity
 {
@@ -287,7 +287,7 @@ public class MainActivity extends Activity
 
                     ParameterMap params = new ParameterMap(MainActivity.this);
                     params.put(TimerData.TAG_DELETE, deleteReason);
-                    new DataSendTask(MainActivity.this).execute(params);
+                    new DataUpdateTask(MainActivity.this).execute(params);
                 }
             })
             .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
@@ -322,13 +322,13 @@ public class MainActivity extends Activity
 
     public void requestData()
     {
-        Intent intent = new Intent(this, DataReceiveReceiver.class);
+        Intent intent = new Intent(this, DataReadReceiver.class);
         PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
 
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
         am.cancel(sender);
 
-        new DataReceiveTask(this, data).execute();
+        new DataReadTask(this, data).execute();
 
         int interval = Constants.SYNC_INVERVAL * 60 * 1000;
         //int interval = 20 * 1000;

@@ -18,12 +18,12 @@ import com.frca.dotatimer.MainActivity;
 import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.ParameterMap;
 
-public class DataSendTask extends AsyncTask<ParameterMap, Void, String>
+public class DataUpdateTask extends AsyncTask<ParameterMap, Void, String>
 {
     private final ProgressDialog dialog;
     //private final Context context;
 
-    public DataSendTask(Context con)
+    public DataUpdateTask(Context con)
     {
         dialog = new ProgressDialog(con);
         //context = con;
