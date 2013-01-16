@@ -199,9 +199,8 @@ class DataPresenter extends \BasePresenter {
     }
 
     private function addDataToJson($json, $userJson) {
-        /*$usersTag = Tags::$TAG_USERS;
-        $allUsers = &$json->$usersTag;*/
-        $allUsers = self::getVar($json, Tags::$TAG_USERS);
+        $usersTag = Tags::$TAG_USERS;
+        $allUsers = &$json->$usersTag;
         $newNick = self::getVar($userJson, Tags::$TAG_NICK);
         $key = $this->getUserKeyInArray($allUsers, $newNick);
 
