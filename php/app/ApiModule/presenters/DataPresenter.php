@@ -73,13 +73,13 @@ class DataPresenter extends \BasePresenter {
                 $newTimerObj = new JSONObject();
                 self::setVar($newTimerObj, Tags::$TAG_VALUE, $timerTarget);
                 self::setVar($newTimerObj, Tags::$TAG_NICK, $this->nick);
-                self::setVar($this->json, Tags::$TAG_DELETE, $newTimerObj);
+                self::setVar($this->json, Tags::$TAG_TIMER, $newTimerObj);
 
                 // delete
                 $newDeleteObj = new JSONObject();
                 self::setVar($newDeleteObj, Tags::$TAG_VALUE);
                 self::setVar($newDeleteObj, Tags::$TAG_NICK);
-                self::setVar($this->json, Tags::$TAG_TIMER, $newDeleteObj);
+                self::setVar($this->json, Tags::$TAG_DELETE, $newDeleteObj);
 
                 // users
                 $allUsers = self::getVar($this->json, Tags::$TAG_USERS);
