@@ -116,17 +116,13 @@ class DataPresenter extends \BasePresenter {
 
 
     private function setInitial($id, $request) {
-        if (is_array($request)) {
-            $this->request = json_decode(json_encode($request));
-            self::setVar($this->request, Tags::$TAG_CHANNEL_NAME, $id);
-        }
-        elseif(is_string($request))
-            $this->request = json_decode($request);
+        $jsonString = is_array($request) ? json_encode($request) : $request;
+        $this->request = json_decode($jsonString);
 
         if (!$this->request)
             throw new BadRequestException("Bad values supplied.");
 
-        $this->id = self::getVar($this->request, Tags::$TAG_CHANNEL_NAME);
+        $this->id = $id ? $id : self::getVar($this->request, Tags::$TAG_CHANNEL_NAME);
         if (!$this->id)
             throw new ForbiddenRequestException("Channel name is required.");
 
