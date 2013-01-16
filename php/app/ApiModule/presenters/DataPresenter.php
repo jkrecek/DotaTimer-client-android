@@ -12,7 +12,7 @@ class DataPresenter extends \BasePresenter {
     private $nick;
     private $password;
 
-    private $requestContainer;
+    private $request;
 
     public static $instance;
 
@@ -26,7 +26,11 @@ class DataPresenter extends \BasePresenter {
             $this->setInitial($id, $query);
             $this->loadLocalJSON();
             $this->checkPassword();
-            ApiResponser::returnOK();
+            $updateSince = self::getVar($this->request, Tags::$TAG_CHANGED);
+            if (!$updateSince || $updateSince == self::getVar($this->json, Tags::$TAG_CHANGED))
+                ApiResponser::returnOK();
+            else
+                ApiResponser::returnUnchanged();
         } catch (ForbiddenRequestException $e) {
             ApiResponser::returnForbidden($e->getMessage());
         } catch (BadRequestException $e) {
@@ -62,10 +66,47 @@ class DataPresenter extends \BasePresenter {
             $this->loadLocalJSON();
             $this->checkPassword();
 
-            $this->addDataToJson($this->json, self::createUserData($this->nick, "", ""));
-            $this->saveJson();
+            if (self::getVar($this->request, Tags::$TAG_TIMER)) {
+                $timerTarget = self::getVar($this->request, Tags::$TAG_TIMER);
 
-            ApiResponser::returnCreated();
+                // timer
+                $newTimerObj = new JSONObject();
+                self::setVar($newTimerObj, Tags::$TAG_VALUE, $timerTarget);
+                self::setVar($newTimerObj, Tags::$TAG_NICK, $this->nick);
+                self::setVar($this->json, Tags::$TAG_DELETE, $newTimerObj);
+
+                // delete
+                $newDeleteObj = new JSONObject();
+                self::setVar($newDeleteObj, Tags::$TAG_VALUE);
+                self::setVar($newDeleteObj, Tags::$TAG_NICK);
+                self::setVar($this->json, Tags::$TAG_TIMER, $newDeleteObj);
+
+                // users
+                $allUsers = self::getVar($this->json, Tags::$TAG_USERS);
+                foreach ($allUsers as $user) {
+                    self::setVar($user, Tags::$TAG_STATE);
+                    self::setVar($user, Tags::$TAG_REASON);
+                }
+            } elseif(self::getVar($this->request, Tags::$TAG_DELETE)) {
+                $deleteReason = self::getVar($this->request, Tags::$TAG_DELETE);
+
+                $newObj = new JSONObject();
+                self::setVar($newObj, Tags::$TAG_VALUE, $deleteReason);
+                self::setVar($newObj, Tags::$TAG_NICK, $this->nick);
+
+                self::setVar($this->json, Tags::$TAG_DELETE, $newObj);
+            } elseif (self::getVar($this->request, Tags::$TAG_STATE)) {
+                $state = self::getVar($this->request, Tags::$TAG_STATE);
+                $reason = self::getVar($this->request, Tags::$TAG_REASON);
+                if (!$reason)
+                    $reason = "";
+
+                $this->addDataToJson($this->json, self::createUserData($this->nick, $state, $reason));
+            } else
+                throw new BadRequestException("Nothing to do");
+
+            $this->saveJson();
+            ApiResponser::returnAccepted();
         } catch (ForbiddenRequestException $e) {
             ApiResponser::returnForbidden($e->getMessage());
         } catch (BadRequestException $e) {
@@ -76,34 +117,26 @@ class DataPresenter extends \BasePresenter {
 
     private function setInitial($id, $request) {
         if (is_array($request)) {
-            $this->requestContainer = $request;
-            $this->id = $id;
-
-            if (!array_key_exists(Tags::$TAG_CHANNEL_PASS, $request))
-                throw new ForbiddenRequestException("Array: Password is required.");
-            $this->password = $request[Tags::$TAG_CHANNEL_PASS];
-
-            if (!array_key_exists(Tags::$TAG_NICK, $request))
-                throw new BadRequestException("Array: Author nick is required.");
-            $this->nick = $request[Tags::$TAG_NICK];
-
-        } elseif(is_string($request) &&
-                is_object($this->requestContainer = json_decode($request))) {
-
-            $this->id = self::getVar($this->requestContainer, Tags::$TAG_CHANNEL_NAME);
-            if (!$this->id)
-                throw new ForbiddenRequestException("JSON: Id is required.");
-
-            $this->password = self::getVar($this->requestContainer, Tags::$TAG_CHANNEL_PASS);
-            if (!$this->password)
-                throw new ForbiddenRequestException("JSON: Password is required.");
-
-            $this->nick = self::getVar($this->requestContainer, Tags::$TAG_NICK);
-            if (!$this->nick)
-                throw new BadRequestException("JSON: Author nick is required.");
+            $this->request = json_decode(json_encode($request));
+            self::setVar($this->request, Tags::$TAG_CHANNEL_NAME, $id);
         }
-        else
+        elseif(is_string($request))
+            $this->request = json_decode($request);
+
+        if (!$this->request)
             throw new BadRequestException("Bad values supplied.");
+
+        $this->id = self::getVar($this->request, Tags::$TAG_CHANNEL_NAME);
+        if (!$this->id)
+            throw new ForbiddenRequestException("Channel name is required.");
+
+        $this->password = self::getVar($this->request, Tags::$TAG_CHANNEL_PASS);
+        if (!$this->password)
+            throw new ForbiddenRequestException("JSON: Password is required.");
+
+        $this->nick = self::getVar($this->request, Tags::$TAG_NICK);
+        if (!$this->nick)
+            throw new BadRequestException("JSON: Author nick is required.");
     }
 
     private function loadLocalJSON() {
@@ -144,8 +177,8 @@ class DataPresenter extends \BasePresenter {
 
     private function createBaseJson() {
         $valueNickPair = new JSONObject();
-        self::setVar($valueNickPair, Tags::$TAG_NICK);
         self::setVar($valueNickPair, Tags::$TAG_VALUE);
+        self::setVar($valueNickPair, Tags::$TAG_NICK);
 
         $newJson = new JSONObject();
         self::setVar($newJson, Tags::$TAG_CHANNEL_NAME, $this->id);
@@ -170,8 +203,9 @@ class DataPresenter extends \BasePresenter {
     }
 
     private function addDataToJson($json, $userJson) {
-        $usersTag = Tags::$TAG_USERS;
-        $allUsers = &$json->$usersTag;
+        /*$usersTag = Tags::$TAG_USERS;
+        $allUsers = &$json->$usersTag;*/
+        $allUsers = self::getVar($json, Tags::$TAG_USERS);
         $newNick = self::getVar($userJson, Tags::$TAG_NICK);
         $key = $this->getUserKeyInArray($allUsers, $newNick);
 

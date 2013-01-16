@@ -49,6 +49,11 @@ class ApiResponser {
         DataPresenter::$instance->sendResponse(new JsonResponse(self::passwordlessJSON(DataPresenter::$instance->json)));
     }
 
+    public static function returnUnchanged() {
+        self::getResponse(DataPresenter::$instance)->setCode(\Nette\Http\Response::S200_OK);
+        DataPresenter::$instance->sendResponse(new TextResponse("Unchanged"));
+    }
+
     private static function getResponse() {
         return DataPresenter::$instance->getService('httpResponse');
     }
