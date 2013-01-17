@@ -6,11 +6,8 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.PendingIntent;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
@@ -19,18 +16,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.frca.dotatimer.helper.Constants;
+import com.frca.dotatimer.helper.Dialog;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
 import com.frca.dotatimer.helper.TimerData;
 import com.frca.dotatimer.implementations.TimerDatePickerDialog;
 import com.frca.dotatimer.tasks.DataReadTask;
-import com.frca.dotatimer.tasks.DataUpdateTask;
 
 public class MainActivity extends Activity
 {
@@ -51,7 +47,8 @@ public class MainActivity extends Activity
     private String mainAuthor;
     private boolean isDeleted;
 
-    private TimerData data;
+    public TimerData data;
+
     public static MainActivity instance;
 
     public Preferences preferences;
@@ -104,7 +101,7 @@ public class MainActivity extends Activity
         switch(item.getItemId())
         {
             case R.id.menu_change_nick:
-                createChangeNickDialog();
+                Dialog.showNick(this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -113,8 +110,10 @@ public class MainActivity extends Activity
 
     public void onValuesChanged()
     {
+        return;
+        /*
         Button deleteButton = (Button)findViewById(R.id.button_delete);
-        if (data.timer.date != null && !data.isDeleted())
+        if (getData().timer.date != null && !getData().isDeleted())
         {
             scheduleCountdownUpdate();
             deleteButton.setEnabled(true);
@@ -126,7 +125,7 @@ public class MainActivity extends Activity
 
             refreshValues();
             refreshLayout();
-        }
+        }*/
     }
 
     public void scheduleCountdownUpdate()
@@ -162,21 +161,22 @@ public class MainActivity extends Activity
 
     public void refreshValues()
     {
-        targetText = data.getTimerString();
-        isDeleted = data.isDeleted();
+        return;/*
+        targetText = getData().getTimerString();
+        isDeleted = getData().isDeleted();
 
         if (data.isDeleted())
         {
-            targetAuthor = data.timer.nick;
-            mainText = data.delete.value;
-            mainAuthor = data.delete.nick;
+            targetAuthor = getData().timer.nick;
+            mainText = getData().delete.value;
+            mainAuthor = getData().delete.nick;
         }
         else
         {
-            mainText = data.getRemainingString();
+            mainText = getData().getRemainingString();
             targetAuthor = null;
-            mainAuthor = data.timer.nick;
-        }
+            mainAuthor = getData().timer.nick;
+        }*/
     }
 
     public void refreshLayout()
@@ -211,96 +211,13 @@ public class MainActivity extends Activity
     private void loadOptions()
     {
         if (preferences.getNick() == null)
-            createChangeNickDialog();
+            Dialog.showNick(this);
         else
             Toast.makeText(MainActivity.this, "Vítejte " + preferences.getNick(), Toast.LENGTH_LONG).show();
 
-        onValuesChanged();
-    }
+        Dialog.showJoin(this);
 
-    private void createChangeNickDialog()
-    {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        alertDialogBuilder.setTitle("Nastavení nicku");
-
-        final EditText input = new EditText(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-
-        alertDialogBuilder
-            .setMessage("Nastavení tvojí pøezdívky")
-            .setCancelable(false)
-            .setView(input)
-            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                    String new_nick = input.getText().toString().trim();
-                    if (new_nick != "")
-                    {
-                        preferences.putAndCommit(TimerData.TAG_NICK, new_nick);
-                        Toast.makeText(MainActivity.this, "Nick zmìnìn na: " + preferences.getNick(), Toast.LENGTH_LONG).show();
-                    }
-                    else
-                        Toast.makeText(MainActivity.this, "Neplatný nick", Toast.LENGTH_LONG).show();
-                }
-            })
-            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog,int id) {
-                    if (preferences.getNick() == null)
-                        finish();
-                    else
-                        dialog.cancel();
-                }
-            });
-
-        AlertDialog dialog = alertDialogBuilder.create();
-        dialog.show();
-        if (preferences.getNick() == null)
-            dialog.getButton(Dialog.BUTTON_NEGATIVE).setEnabled(false);
-    }
-
-    private void createDeleteDialog()
-    {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        alertDialogBuilder.setTitle("Zrušení timeru");
-
-        final EditText input = new EditText(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-
-        alertDialogBuilder
-            .setMessage("Zadej dùvod pro zrušení souèasného timeru")
-            .setCancelable(false)
-            .setView(input)
-            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                    String deleteReason = input.getText().toString().trim();
-                    if (!Constants.isValid(deleteReason))
-                    {
-                        Toast.makeText(MainActivity.this, "Musíš uvést dùvod", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    ParameterMap params = new ParameterMap(MainActivity.this);
-                    params.put(TimerData.TAG_DELETE, deleteReason);
-                    new DataUpdateTask(MainActivity.this).execute(params);
-                }
-            })
-            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog,int id) {
-                    dialog.cancel();
-                }
-            });
-
-        AlertDialog dialog = alertDialogBuilder.create();
-        dialog.show();
-        if (preferences.getNick() == null)
-            dialog.getButton(Dialog.BUTTON_NEGATIVE).setEnabled(false);
+        //onValuesChanged();
     }
 
     public void callRefresh(View v)
@@ -317,7 +234,8 @@ public class MainActivity extends Activity
 
     public void callDelete(View v)
     {
-        createDeleteDialog();
+        //Dialog.showDelete(this);
+        Dialog.showJoin(this);
     }
 
     public void requestData()
@@ -328,10 +246,43 @@ public class MainActivity extends Activity
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
         am.cancel(sender);
 
-        new DataReadTask(this, data).execute();
+        new DataReadTask(this, new ParameterMap(this)).execute();
 
         int interval = Constants.SYNC_INVERVAL * 60 * 1000;
         //int interval = 20 * 1000;
         am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, interval, sender);
+    }
+
+    public void onReadTaskStart()
+    {
+        toggleLayoutContent(false);
+        ((Button)findViewById(R.id.button_refresh)).setEnabled(false);
+    }
+
+    public void onReadTaskEnd(String result)
+    {
+        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        toggleLayoutContent(true);
+        ((Button)findViewById(R.id.button_refresh)).setEnabled(true);
+        onValuesChanged();
+    }
+
+    public void onCreateTaskEnd(String result)
+    {
+        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+    }
+
+    public void onUpdateTaskEnd(String result)
+    {
+        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        requestData();
+    }
+
+    private TimerData getData()
+    {
+        if (data == null)
+            data = Constants.getFirstTimerData(this);
+
+        return data;
     }
 }

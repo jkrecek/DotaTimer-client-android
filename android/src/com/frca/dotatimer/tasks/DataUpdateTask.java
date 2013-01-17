@@ -1,96 +1,45 @@
 package com.frca.dotatimer.tasks;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Map.Entry;
+import org.apache.http.client.methods.HttpPut;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.frca.dotatimer.MainActivity;
-import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.ParameterMap;
 
-public class DataUpdateTask extends AsyncTask<ParameterMap, Void, String>
+public class DataUpdateTask extends SynchronizationTask
 {
     private final ProgressDialog dialog;
-    //private final Context context;
 
-    public DataUpdateTask(Context con)
+    public DataUpdateTask(Context con, ParameterMap m)
     {
-        dialog = new ProgressDialog(con);
-        //context = con;
+        super(con, m, HttpPut.class);
+        dialog = new ProgressDialog(context);
     }
 
     @Override
-    protected void onPreExecute()
+    protected void onStart()
     {
         dialog.setMessage("Odesílání..");
         dialog.show();
     }
 
     @Override
-    protected String doInBackground(ParameterMap... maps)
+    protected void onEnd(String result)
     {
-        String parameters = getParametersFromMap(maps[0]);
-
-        String lineResponse = "";
-
-        try
-        {
-            URL url = new URL(Constants.getServerHandlerURL());
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setRequestMethod("POST");
-
-            OutputStreamWriter request = new OutputStreamWriter(connection.getOutputStream());
-            request.write(parameters);
-            request.flush();
-            request.close();
-
-            InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-            BufferedReader reader = new BufferedReader(isr);
-            lineResponse = reader.readLine();
-
-            isr.close();
-            reader.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Log.d("response", lineResponse);
-        if (lineResponse.equals("OK"))
-            return "Data úspìšnì odeslána";
-        else
-            return "Nastal problém, data se neodeslala";
-    }
-
-    private String getParametersFromMap(ParameterMap map)
-    {
-        String str = "";
-        for (Entry<String, String> pair : map.entrySet())
-            str += pair.getKey() + "=" + pair.getValue() + "&";
-
-        return str.substring(0, str.length() - 1);
+        dialog.dismiss();
     }
 
     @Override
-    protected void onPostExecute(String result)
+    protected void onEndActivity(MainActivity instance, String res)
     {
-        dialog.dismiss();
-        if (MainActivity.instance != null)
-        {
-            Toast.makeText(MainActivity.instance, result, Toast.LENGTH_LONG).show();
-            MainActivity.instance.requestData();
-        }
+        instance.onUpdateTaskEnd(res);
+    }
+
+    @Override
+    protected void setPostMessage()
+    {
+        postBody = map.toJSONString();
     }
 }

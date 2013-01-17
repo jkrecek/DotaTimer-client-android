@@ -38,6 +38,6 @@ public class TimerTimePickerDialog implements TimePickerDialog.OnTimeSetListener
         int time = (int) (timerPicker.getTimeInMillis()/1000);
         ParameterMap params = new ParameterMap(context);
         params.put(TimerData.TAG_TIMER, Integer.toString(time));
-        new DataUpdateTask(context).execute(params);
+        new DataUpdateTask(context, params).execute();
     }
 }

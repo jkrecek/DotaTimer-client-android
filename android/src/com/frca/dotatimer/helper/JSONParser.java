@@ -1,10 +1,13 @@
 package com.frca.dotatimer.helper;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -15,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.util.Log;
 
 public class JSONParser {
@@ -39,6 +43,7 @@ public class JSONParser {
             HttpResponse httpResponse = httpClient.execute(httpPost);
             HttpEntity httpEntity = httpResponse.getEntity();
             is = httpEntity.getContent();
+            parseInputStream();
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -48,18 +53,20 @@ public class JSONParser {
             e.printStackTrace();
         }
 
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-            is.close();
-            json = sb.toString();
-        } catch (Exception e) {
-            Log.e("Buffer Error", "Error converting result " + e.toString());
-        }
+        return jObj;
+
+    }
+
+    public JSONObject getJSONFromInputStream(InputStream stream)
+    {
+        is = stream;
+        parseInputStream();
+        return jObj;
+    }
+
+    public void parseInputStream()
+    {
+        json = JSONParser.InputStreamToString(is);
 
         // try parse the string to a JSON object
         try {
@@ -67,9 +74,6 @@ public class JSONParser {
         } catch (JSONException e) {
             Log.e("JSON Parser", "Error parsing data " + e.toString());
         }
-
-        // return JSON String
-        return jObj;
     }
 
     /***********************/
@@ -113,5 +117,37 @@ public class JSONParser {
             Log.d("JSONParser", "Unable to parse JSONArray from value '"+key+"'");
             return null;
         }
+    }
+
+    public static void saveJSONtoFile(Context context, JSONObject json)
+    {
+        String channelName = JSONParser.getStringOrNull(json, TimerData.TAG_CHANNEL_NAME);
+
+        try {
+            FileOutputStream fos = context.openFileOutput(channelName+".json", Context.MODE_PRIVATE);
+            String jsonString = json.toString();
+            jsonString += "\n";
+            fos.write(jsonString.getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            Log.d("DataReceiveTask", "Cannot write, file was not found");
+        } catch (IOException e) {
+            Log.d("DataReceiveTask", "Error while writing into file");
+        }
+    }
+
+    public static String InputStreamToString(InputStream is)
+    {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.defaultCharset()), 8);
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        try {
+            while ((line = reader.readLine()) != null)
+                sb.append(line + "\n");
+        } catch (IOException e) {
+            Log.e("Buffer Error", "Error converting result " + e.toString());
+        }
+
+        return sb.toString();
     }
 }

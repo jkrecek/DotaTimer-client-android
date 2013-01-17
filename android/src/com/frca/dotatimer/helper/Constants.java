@@ -35,21 +35,10 @@ public class Constants
 
     public static final String PREF_OPTIONS = "options";
 
-    private static final String SERVER_ROUTE = "http://dotatimer.himym.cz";
-    private static final String SERVER_HANDLER = "handler.php";
-    private static final String SERVER_JSON = "dotatimer.json";
+    //public static final String SERVER_ROUTE = "http://dotatimer.himym.cz";
+    public static final String SERVER_ROUTE = "http://147.32.93.202";
 
     public static final int SYNC_INVERVAL = 5; // in minutes
-
-    public static String getServerHandlerURL()
-    {
-        return SERVER_ROUTE + "/" + SERVER_HANDLER;
-    }
-
-    public static String getServerJsonURL()
-    {
-        return SERVER_ROUTE + "/" + SERVER_JSON;
-    }
 
     public static String toHumanReadable(int time)
     {

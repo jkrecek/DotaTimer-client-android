@@ -8,13 +8,13 @@
     <!-- Loading View -->
     <LinearLayout android:id="@+id/layout_loading" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:visibility="gone" >
-	    <LinearLayout  android:layout_height="30dp" android:layout_width="wrap_content"
-	         android:layout_gravity="center" >
-	        <ProgressBar android:layout_width="wrap_content" android:layout_height="match_parent" />        
-	        <TextView android:layout_width="wrap_content" android:layout_height="match_parent"
-	            android:text="Synchronizace..." android:paddingLeft="5dp" android:gravity="center"/>
-	    </LinearLayout>
-	    <View android:layout_width="match_parent" android:layout_height="2dp" android:background="@drawable/textlines"/>
+        <LinearLayout  android:layout_height="30dp" android:layout_width="wrap_content"
+             android:layout_gravity="center" >
+            <ProgressBar android:layout_width="wrap_content" android:layout_height="match_parent" />        
+            <TextView android:layout_width="wrap_content" android:layout_height="match_parent"
+                android:text="Synchronizace..." android:paddingLeft="5dp" android:gravity="center"/>
+        </LinearLayout>
+        <View android:layout_width="match_parent" android:layout_height="2dp" android:background="@drawable/textlines"/>
     </LinearLayout>
 
     <!-- Default View -->

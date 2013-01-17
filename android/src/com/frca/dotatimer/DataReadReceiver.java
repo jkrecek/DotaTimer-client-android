@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.frca.dotatimer.helper.Constants;
+import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.tasks.DataReadTask;
 
 
@@ -16,6 +16,6 @@ public class DataReadReceiver extends BroadcastReceiver
     {
         Log.d("DataReceiveReceiver", "onReceive");
 
-        new DataReadTask(context, Constants.getFirstTimerData(context)).execute();
+        new DataReadTask(context, new ParameterMap(context)).execute();
     }
 }

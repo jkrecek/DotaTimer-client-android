@@ -1,20 +1,45 @@
 package com.frca.dotatimer.tasks;
 
+import org.apache.http.client.methods.HttpPost;
+
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 
-public class DataCreateTask extends AsyncTask<Void, Void, Void>
+import com.frca.dotatimer.MainActivity;
+import com.frca.dotatimer.helper.ParameterMap;
+
+public class DataCreateTask extends SynchronizationTask
 {
-    private final Context context;
+    private final ProgressDialog dialog;
 
-    public DataCreateTask(Context con)
+    public DataCreateTask(Context con, ParameterMap m)
     {
-        context = con;
+        super(con, m, HttpPost.class);
+        dialog = new ProgressDialog(con);
     }
 
-	@Override
-	protected Void doInBackground(Void... arg0) {
+    @Override
+    protected void onStart()
+    {
+        dialog.setMessage("Pøihlašování..");
+        dialog.show();
+    }
 
-		return null;
-	}
+    @Override
+    protected void onEnd(String result)
+    {
+        dialog.dismiss();
+    }
+
+    @Override
+    protected void onEndActivity(MainActivity instance, String res)
+    {
+        instance.onCreateTaskEnd(res);
+    }
+
+    @Override
+    protected void setPostMessage()
+    {
+        postBody = map.toJSONString();
+    }
 }
