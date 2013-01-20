@@ -26,8 +26,8 @@ class DataPresenter extends \BasePresenter {
             $this->setInitial($id, $query);
             $this->loadLocalJSON();
             $this->checkPassword();
-            $updateSince = self::getVar($this->request, Tags::$TAG_CHANGED);
-            if (!$updateSince || $updateSince == self::getVar($this->json, Tags::$TAG_CHANGED))
+            $updateSince = self::getVar($this->request, Tags::TAG_CHANGED);
+            if (!$updateSince || $updateSince == self::getVar($this->json, Tags::TAG_CHANGED))
                 ApiResponser::returnOK();
             else
                 ApiResponser::returnUnchanged();
@@ -66,38 +66,38 @@ class DataPresenter extends \BasePresenter {
             $this->loadLocalJSON();
             $this->checkPassword();
 
-            if (self::getVar($this->request, Tags::$TAG_TIMER)) {
-                $timerTarget = self::getVar($this->request, Tags::$TAG_TIMER);
+            if (self::getVar($this->request, Tags::TAG_TIMER)) {
+                $timerTarget = self::getVar($this->request, Tags::TAG_TIMER);
 
                 // timer
                 $newTimerObj = new JSONObject();
-                self::setVar($newTimerObj, Tags::$TAG_VALUE, $timerTarget);
-                self::setVar($newTimerObj, Tags::$TAG_NICK, $this->nick);
-                self::setVar($this->json, Tags::$TAG_TIMER, $newTimerObj);
+                self::setVar($newTimerObj, Tags::TAG_VALUE, $timerTarget);
+                self::setVar($newTimerObj, Tags::TAG_NICK, $this->nick);
+                self::setVar($this->json, Tags::TAG_TIMER, $newTimerObj);
 
                 // delete
                 $newDeleteObj = new JSONObject();
-                self::setVar($newDeleteObj, Tags::$TAG_VALUE);
-                self::setVar($newDeleteObj, Tags::$TAG_NICK);
-                self::setVar($this->json, Tags::$TAG_DELETE, $newDeleteObj);
+                self::setVar($newDeleteObj, Tags::TAG_VALUE);
+                self::setVar($newDeleteObj, Tags::TAG_NICK);
+                self::setVar($this->json, Tags::TAG_DELETE, $newDeleteObj);
 
                 // users
-                $allUsers = self::getVar($this->json, Tags::$TAG_USERS);
+                $allUsers = self::getVar($this->json, Tags::TAG_USERS);
                 foreach ($allUsers as $user) {
-                    self::setVar($user, Tags::$TAG_STATE);
-                    self::setVar($user, Tags::$TAG_REASON);
+                    self::setVar($user, Tags::TAG_STATE);
+                    self::setVar($user, Tags::TAG_REASON);
                 }
-            } elseif(self::getVar($this->request, Tags::$TAG_DELETE)) {
-                $deleteReason = self::getVar($this->request, Tags::$TAG_DELETE);
+            } elseif(self::getVar($this->request, Tags::TAG_DELETE)) {
+                $deleteReason = self::getVar($this->request, Tags::TAG_DELETE);
 
                 $newObj = new JSONObject();
-                self::setVar($newObj, Tags::$TAG_VALUE, $deleteReason);
-                self::setVar($newObj, Tags::$TAG_NICK, $this->nick);
+                self::setVar($newObj, Tags::TAG_VALUE, $deleteReason);
+                self::setVar($newObj, Tags::TAG_NICK, $this->nick);
 
-                self::setVar($this->json, Tags::$TAG_DELETE, $newObj);
-            } elseif (self::getVar($this->request, Tags::$TAG_STATE)) {
-                $state = self::getVar($this->request, Tags::$TAG_STATE);
-                $reason = self::getVar($this->request, Tags::$TAG_REASON);
+                self::setVar($this->json, Tags::TAG_DELETE, $newObj);
+            } elseif (self::getVar($this->request, Tags::TAG_STATE)) {
+                $state = self::getVar($this->request, Tags::TAG_STATE);
+                $reason = self::getVar($this->request, Tags::TAG_REASON);
                 if (!$reason)
                     $reason = "";
 
@@ -122,15 +122,15 @@ class DataPresenter extends \BasePresenter {
         if (!$this->request)
             throw new BadRequestException("Bad values supplied.");
 
-        $this->id = $id ? $id : self::getVar($this->request, Tags::$TAG_CHANNEL_NAME);
+        $this->id = $id ? $id : self::getVar($this->request, Tags::TAG_CHANNEL_NAME);
         if (!$this->id)
             throw new ForbiddenRequestException("Channel name is required.");
 
-        $this->password = self::getVar($this->request, Tags::$TAG_CHANNEL_PASS);
+        $this->password = self::getVar($this->request, Tags::TAG_CHANNEL_PASS);
         if (!$this->password)
             throw new ForbiddenRequestException("JSON: Password is required.");
 
-        $this->nick = self::getVar($this->request, Tags::$TAG_NICK);
+        $this->nick = self::getVar($this->request, Tags::TAG_NICK);
         if (!$this->nick)
             throw new BadRequestException("JSON: Author nick is required.");
     }
@@ -163,7 +163,7 @@ class DataPresenter extends \BasePresenter {
         if ($this->json == NULL)
             throw new BadRequestException("Channel with id '".  $this->id."' does not exist.");
 
-        $field = Tags::$TAG_CHANNEL_PASS;
+        $field = Tags::TAG_CHANNEL_PASS;
         return $this->json->$field;
     }
 
@@ -173,16 +173,16 @@ class DataPresenter extends \BasePresenter {
 
     private function createBaseJson() {
         $valueNickPair = new JSONObject();
-        self::setVar($valueNickPair, Tags::$TAG_VALUE);
-        self::setVar($valueNickPair, Tags::$TAG_NICK);
+        self::setVar($valueNickPair, Tags::TAG_VALUE);
+        self::setVar($valueNickPair, Tags::TAG_NICK);
 
         $newJson = new JSONObject();
-        self::setVar($newJson, Tags::$TAG_CHANNEL_NAME, $this->id);
-        self::setVar($newJson, Tags::$TAG_CHANNEL_PASS, $this->password);
-        self::setVar($newJson, Tags::$TAG_CHANGED, time());
-        self::setVar($newJson, Tags::$TAG_TIMER, $valueNickPair);
-        self::setVar($newJson, Tags::$TAG_DELETE, $valueNickPair);
-        self::setVar($newJson, Tags::$TAG_USERS, array());
+        self::setVar($newJson, Tags::TAG_CHANNEL_NAME, $this->id);
+        self::setVar($newJson, Tags::TAG_CHANNEL_PASS, $this->password);
+        self::setVar($newJson, Tags::TAG_CHANGED, time());
+        self::setVar($newJson, Tags::TAG_TIMER, $valueNickPair);
+        self::setVar($newJson, Tags::TAG_DELETE, $valueNickPair);
+        self::setVar($newJson, Tags::TAG_USERS, array());
 
         return $newJson;
     }
@@ -199,9 +199,9 @@ class DataPresenter extends \BasePresenter {
     }
 
     private function addDataToJson($json, $userJson) {
-        $usersTag = Tags::$TAG_USERS;
+        $usersTag = Tags::TAG_USERS;
         $allUsers = &$json->$usersTag;
-        $newNick = self::getVar($userJson, Tags::$TAG_NICK);
+        $newNick = self::getVar($userJson, Tags::TAG_NICK);
         $key = $this->getUserKeyInArray($allUsers, $newNick);
 
         if ($key === -1)    // not found
@@ -212,7 +212,7 @@ class DataPresenter extends \BasePresenter {
 
     private function getUserKeyInArray($users, $newNick) {
         foreach ($users as $key => $user)
-            if (self::getVar($user, Tags::$TAG_NICK) == $newNick)
+            if (self::getVar($user, Tags::TAG_NICK) == $newNick)
                 return $key;
 
         return -1;
@@ -220,14 +220,14 @@ class DataPresenter extends \BasePresenter {
 
     private static function createUserData($nick, $state, $reason) {
         $data = new JSONObject();
-        self::setVar($data, Tags::$TAG_NICK, $nick);
-        self::setVar($data, Tags::$TAG_STATE, $state);
-        self::setVar($data, Tags::$TAG_REASON, $reason);
+        self::setVar($data, Tags::TAG_NICK, $nick);
+        self::setVar($data, Tags::TAG_STATE, $state);
+        self::setVar($data, Tags::TAG_REASON, $reason);
         return $data;
     }
 
     private function saveJson() {
-        self::setVar($this->json, Tags::$TAG_CHANGED, time());
+        self::setVar($this->json, Tags::TAG_CHANGED, time());
         $file = fopen($this->getRouteToJSON($this->id), "w");
         fwrite($file, json_encode($this->json));
         fclose($file);
