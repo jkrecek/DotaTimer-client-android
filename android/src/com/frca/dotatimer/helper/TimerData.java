@@ -54,14 +54,13 @@ public class TimerData
             nick = JSONParser.getStringOrNull(json, TAG_NICK);
             value = JSONParser.getStringOrNull(json, TAG_VALUE);
 
-            int intVal = JSONParser.getIntOrNil(json, TAG_VALUE);
-            if (intVal == 0)
-                date = null;
-            else
-            {
+            Date tempDate = null;
+            try {
+                int intVal = Integer.parseInt(value);
                 long msVal = (long)intVal * 1000;
-                date = new Date(msVal);
-            }
+                tempDate = new Date(msVal);
+            } catch (NumberFormatException e) { }
+            date = tempDate;
         }
     }
 
@@ -87,13 +86,13 @@ public class TimerData
     private class UserData
     {
         public final String nick;
-        public final int state;
+        public final String state;
         public final String reason;
 
         private UserData(JSONObject json)
         {
             nick = JSONParser.getStringOrNull(json, TAG_NICK);
-            state = JSONParser.getIntOrNil(json, TAG_STATE);
+            state = JSONParser.getStringOrNull(json, TAG_STATE);
             reason = JSONParser.getStringOrNull(json, TAG_REASON);
         }
     }

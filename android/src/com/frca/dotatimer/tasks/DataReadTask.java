@@ -5,9 +5,9 @@ import org.apache.http.client.methods.HttpPost;
 import android.content.Context;
 
 import com.frca.dotatimer.MainActivity;
-import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.NotificationDataHolder;
 import com.frca.dotatimer.helper.ParameterMap;
+import com.frca.dotatimer.helper.Preferences;
 
 public class DataReadTask extends SynchronizationTask
 {
@@ -36,7 +36,7 @@ public class DataReadTask extends SynchronizationTask
 
     @Override
     protected void setUpUrl() {
-        String relativeUrl = "api/data/"+ Constants.getPreferences(context).getChannelName() + ".json";
+        String relativeUrl = "api/data/"+ Preferences.getPreferences(context).getChannelName() + ".json";
         String parameters = map.toGetString();
         setUpFullUrl(relativeUrl + "?" + parameters);
     }

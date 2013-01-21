@@ -1,4 +1,7 @@
-package com.frca.dotatimer.helper;
+package com.frca.dotatimer.implementations;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -9,6 +12,10 @@ import android.widget.Toast;
 
 import com.frca.dotatimer.MainActivity;
 import com.frca.dotatimer.R;
+import com.frca.dotatimer.helper.Constants;
+import com.frca.dotatimer.helper.ParameterMap;
+import com.frca.dotatimer.helper.Preferences;
+import com.frca.dotatimer.helper.TimerData;
 import com.frca.dotatimer.tasks.DataCreateTask;
 import com.frca.dotatimer.tasks.DataUpdateTask;
 
@@ -24,12 +31,13 @@ public class Dialog {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         input.setLayoutParams(lp);
 
-        final Preferences prefs = Constants.getPreferences(activity);
+        final Preferences prefs = Preferences.getPreferences(activity);
         alertDialogBuilder
             .setMessage("Nastavení tvojí pøezdívky")
             .setCancelable(false)
             .setView(input)
-            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener() {
+            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener()
+            {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     String new_nick = input.getText().toString().trim();
@@ -42,7 +50,8 @@ public class Dialog {
                         Toast.makeText(activity, "Neplatný nick", Toast.LENGTH_LONG).show();
                 }
             })
-            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
+            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener()
+            {
                 @Override
                 public void onClick(DialogInterface dialog,int id) {
                     if (prefs.getNick() == null)
@@ -59,6 +68,8 @@ public class Dialog {
             dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);
     }
 
+    public static Map<String, String> tempChannelValues = new HashMap<String, String>();
+
     public static void showJoin(final MainActivity activity)
     {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
@@ -69,12 +80,12 @@ public class Dialog {
         final EditText inputChannel = (EditText)values.findViewById(R.id.edit_channel_name);
         final EditText inputPass = (EditText)values.findViewById(R.id.edit_channel_pass);
 
-        final Preferences prefs = Constants.getPreferences(activity);
         alertDialogBuilder
             .setMessage("Login")
             .setCancelable(false)
             .setView(values)
-            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener() {
+            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener()
+            {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     String enteredChannel = inputChannel.getText().toString().trim();
@@ -92,16 +103,19 @@ public class Dialog {
                         map.put(TimerData.TAG_CHANNEL_PASS, enteredPass);
 
                         new DataCreateTask(activity, map).execute();
+
+                        // save for later
+                        tempChannelValues.clear();
+                        tempChannelValues.put(TimerData.TAG_CHANNEL_NAME, enteredChannel);
+                        tempChannelValues.put(TimerData.TAG_CHANNEL_PASS, enteredPass);
                     }
                 }
             })
-            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
+            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener()
+            {
                 @Override
                 public void onClick(DialogInterface dialog,int id) {
-                    /*if (preferences.getNick() == null)
-                        finish();
-                    else
-                        dialog.cancel();*/
+                    dialog.cancel();
                 }
             });
 
@@ -123,7 +137,8 @@ public class Dialog {
             .setMessage("Zadej dùvod pro zrušení souèasného timeru")
             .setCancelable(false)
             .setView(input)
-            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener() {
+            .setPositiveButton("Potvrdit", new DialogInterface.OnClickListener()
+            {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     String deleteReason = input.getText().toString().trim();
@@ -138,7 +153,8 @@ public class Dialog {
                     new DataUpdateTask(activity, params).execute();
                 }
             })
-            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener() {
+            .setNegativeButton("Zrušit", new DialogInterface.OnClickListener()
+            {
                 @Override
                 public void onClick(DialogInterface dialog,int id) {
                     dialog.cancel();

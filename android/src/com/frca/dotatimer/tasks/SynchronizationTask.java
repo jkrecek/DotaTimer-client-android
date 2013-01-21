@@ -22,8 +22,8 @@ import android.util.Log;
 
 import com.frca.dotatimer.MainActivity;
 import com.frca.dotatimer.helper.Constants;
+import com.frca.dotatimer.helper.DataHolder;
 import com.frca.dotatimer.helper.JSONParser;
-import com.frca.dotatimer.helper.NotificationDataHolder;
 import com.frca.dotatimer.helper.ParameterMap;
 
 public abstract class SynchronizationTask extends AsyncTask<Void, Void, String> {
@@ -70,14 +70,9 @@ public abstract class SynchronizationTask extends AsyncTask<Void, Void, String> 
         JSONParser jParser = new JSONParser();
         JSONObject json = jParser.getJSONFromInputStream(result);
 
-        // recieved updated json
-        JSONParser.saveJSONtoFile(context, json);
+        DataHolder.saveJSON(context, json);
 
-        NotificationDataHolder.unset();
-        if (MainActivity.instance != null)
-            MainActivity.instance.data.parseJSON(json);
-
-        return "OK";
+        return null;
     }
 
     @Override

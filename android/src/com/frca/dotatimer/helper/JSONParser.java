@@ -1,8 +1,6 @@
 package com.frca.dotatimer.helper;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
 import android.util.Log;
 
 public class JSONParser {
@@ -116,23 +113,6 @@ public class JSONParser {
         } catch (JSONException e) {
             Log.d("JSONParser", "Unable to parse JSONArray from value '"+key+"'");
             return null;
-        }
-    }
-
-    public static void saveJSONtoFile(Context context, JSONObject json)
-    {
-        String channelName = JSONParser.getStringOrNull(json, TimerData.TAG_CHANNEL_NAME);
-
-        try {
-            FileOutputStream fos = context.openFileOutput(channelName+".json", Context.MODE_PRIVATE);
-            String jsonString = json.toString();
-            jsonString += "\n";
-            fos.write(jsonString.getBytes());
-            fos.close();
-        } catch (FileNotFoundException e) {
-            Log.d("DataReceiveTask", "Cannot write, file was not found");
-        } catch (IOException e) {
-            Log.d("DataReceiveTask", "Error while writing into file");
         }
     }
 

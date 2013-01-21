@@ -13,9 +13,9 @@ public class ParameterMap extends HashMap<String, String>
     public ParameterMap(Context context)
     {
         super();
-        put(TimerData.TAG_NICK, Constants.getPreferences(context).getNick());
+        put(TimerData.TAG_NICK, Preferences.getPreferences(context).getNick());
         /*put(TimerData.TAG_CHANNEL_NAME, Constants.getPreferences(context).getChannelName());*/
-        put(TimerData.TAG_CHANNEL_PASS, Constants.getPreferences(context).getChannelPass());
+        put(TimerData.TAG_CHANNEL_PASS, Preferences.getPreferences(context).getChannelPass());
     }
 
     public String toJSONString()

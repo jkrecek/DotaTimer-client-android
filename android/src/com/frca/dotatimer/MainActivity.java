@@ -1,6 +1,7 @@
 package com.frca.dotatimer;
 
 import java.util.Calendar;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -12,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,10 +23,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.frca.dotatimer.helper.Constants;
-import com.frca.dotatimer.helper.Dialog;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.Preferences;
 import com.frca.dotatimer.helper.TimerData;
+import com.frca.dotatimer.implementations.Dialog;
 import com.frca.dotatimer.implementations.TimerDatePickerDialog;
 import com.frca.dotatimer.tasks.DataReadTask;
 
@@ -61,7 +63,7 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        preferences = Constants.getPreferences(this);
+        preferences = Preferences.getPreferences(this);
 
         loadOptions();
 
@@ -75,7 +77,8 @@ public class MainActivity extends Activity
 
         instance = this;
 
-        scheduleCountdownUpdate();
+        if (data != null)
+            scheduleCountdownUpdate();
     }
 
     @Override
@@ -108,12 +111,35 @@ public class MainActivity extends Activity
         }
     }
 
+    public void onPreferencesChanged(Map<String, Boolean> changedKeys)
+    {
+        if ((changedKeys.containsKey(TimerData.TAG_CHANNEL_NAME) && changedKeys.get(TimerData.TAG_CHANNEL_NAME)) ||
+            (changedKeys.containsKey(TimerData.TAG_CHANNEL_PASS) && changedKeys.get(TimerData.TAG_CHANNEL_PASS)))
+        {
+            if (Constants.isValid(preferences.getNick()))
+                requestData();
+            else
+                Dialog.showNick(this);
+        }
+
+        if (changedKeys.containsKey(TimerData.TAG_NICK) && changedKeys.get(TimerData.TAG_NICK))
+        {
+            if (Constants.isValid(preferences.getChannelName()) &&
+                Constants.isValid(preferences.getChannelPass()))
+                requestData();
+            else
+                Dialog.showJoin(this);
+        }
+
+    }
+
     public void onValuesChanged()
     {
-        return;
-        /*
+        if (data == null)
+            return;
+
         Button deleteButton = (Button)findViewById(R.id.button_delete);
-        if (getData().timer.date != null && !getData().isDeleted())
+        if (data.timer.date != null && !data.isDeleted())
         {
             scheduleCountdownUpdate();
             deleteButton.setEnabled(true);
@@ -125,7 +151,7 @@ public class MainActivity extends Activity
 
             refreshValues();
             refreshLayout();
-        }*/
+        }
     }
 
     public void scheduleCountdownUpdate()
@@ -146,8 +172,11 @@ public class MainActivity extends Activity
 
     public void disableCountdownUpdate()
     {
-        timer.cancel();
-        timer = null;
+        if (timer != null)
+        {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     public void toggleLayoutContent(boolean show)
@@ -161,22 +190,24 @@ public class MainActivity extends Activity
 
     public void refreshValues()
     {
-        return;/*
-        targetText = getData().getTimerString();
-        isDeleted = getData().isDeleted();
+        if (data == null)
+            return;
+
+        targetText = data.getTimerString();
+        isDeleted = data.isDeleted();
 
         if (data.isDeleted())
         {
-            targetAuthor = getData().timer.nick;
-            mainText = getData().delete.value;
-            mainAuthor = getData().delete.nick;
+            targetAuthor = data.timer.nick;
+            mainText = data.delete.value;
+            mainAuthor = data.delete.nick;
         }
         else
         {
-            mainText = getData().getRemainingString();
+            mainText = data.getRemainingString();
             targetAuthor = null;
-            mainAuthor = getData().timer.nick;
-        }*/
+            mainAuthor = data.timer.nick;
+        }
     }
 
     public void refreshLayout()
@@ -212,12 +243,14 @@ public class MainActivity extends Activity
     {
         if (preferences.getNick() == null)
             Dialog.showNick(this);
-        else
+        else {
             Toast.makeText(MainActivity.this, "Vítejte " + preferences.getNick(), Toast.LENGTH_LONG).show();
 
-        Dialog.showJoin(this);
+            //if (!preferences.hasChannelSet())
+                Dialog.showJoin(this);
+        }
 
-        //onValuesChanged();
+        onValuesChanged();
     }
 
     public void callRefresh(View v)
@@ -240,6 +273,9 @@ public class MainActivity extends Activity
 
     public void requestData()
     {
+        if (!Preferences.getPreferences(this).hasChannelSet())
+            return;
+
         Intent intent = new Intent(this, DataReadReceiver.class);
         PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
 
@@ -267,22 +303,35 @@ public class MainActivity extends Activity
         onValuesChanged();
     }
 
-    public void onCreateTaskEnd(String result)
+    public void onCreateTaskEnd(String result, ParameterMap paraMap)
     {
-        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        if (result != null)
+        {
+            Toast.makeText(this, "Error: "+result, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // now we can commit values
+        String channelName = paraMap.get(TimerData.TAG_CHANNEL_NAME);
+        String channelPass = paraMap.get(TimerData.TAG_CHANNEL_PASS);
+
+        if (Constants.isValid(channelName) && Constants.isValid(channelPass))
+        {
+            preferences.put(TimerData.TAG_CHANNEL_NAME, channelName);
+            preferences.put(TimerData.TAG_CHANNEL_PASS, channelPass);
+            preferences.commit();
+        }
+        else
+        {
+            Toast.makeText(this, "Chyba, data nemohla být uložena", Toast.LENGTH_LONG).show();
+            Log.d("ActivityCreateTask",
+                  "Either channelName or channelPass is not supplied (name: '"+Constants.emptyNull(channelName)+"', pass: '" +Constants.emptyNull(channelPass)+"')");
+        }
     }
 
     public void onUpdateTaskEnd(String result)
     {
         Toast.makeText(this, result, Toast.LENGTH_LONG).show();
         requestData();
-    }
-
-    private TimerData getData()
-    {
-        if (data == null)
-            data = Constants.getFirstTimerData(this);
-
-        return data;
     }
 }

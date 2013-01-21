@@ -34,7 +34,7 @@ public class DataCreateTask extends SynchronizationTask
     @Override
     protected void onEndActivity(MainActivity instance, String res)
     {
-        instance.onCreateTaskEnd(res);
+        instance.onCreateTaskEnd(res, map);
     }
 
     @Override

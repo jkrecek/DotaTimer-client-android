@@ -1,9 +1,10 @@
 package com.frca.dotatimer.helper;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import android.content.Context;
 
 public class Constants
 {
@@ -97,54 +98,41 @@ public class Constants
         return str != null && !str.equals("");
     }
 
-    /*public static boolean isValueTag(String tag)
+    public static String emptyNull(String str)
     {
-        if (Constants.isValid(tag))
-            for (String _tag : RECEIVED_VALUES_PAIRS.keySet())
-                if (tag.equals(_tag))
-                    return true;
+        if (str == null)
+            return "";
 
-        return false;
-    }*/
-
-    public static List<TimerData> datas = new ArrayList<TimerData>();
-
-    public static TimerData getTimerData(Context context, String channelName)
-    {
-        for (TimerData data : datas)
-            if (data.channelName.equals(channelName))
-                return data;
-
-        TimerData newData = TimerData.fromFile(context, channelName);
-        datas.add(newData);
-        return newData;
+        return str;
     }
 
-    public static TimerData getFirstTimerData(Context context)
+    public static String hashText(String text)
     {
-        return getTimerData(context, getPreferences(context).getChannelName());
-
-    }
-
-    public static Preferences preferences;
-
-    public static Preferences getPreferences(Context context)
-    {
-        if (preferences == null)
-            preferences = new Preferences(context);
-
-        return preferences;
-    }
-
-    /*public static String getAuthorTag(String tag)
-    {
-        if (!Constants.isValid(tag))
+        MessageDigest m;
+        try
+        {
+            m = MessageDigest.getInstance("MD5");
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
             return null;
+        }
+        m.reset();
+        try
+        {
+            m.update(text.getBytes("UTF-8"));
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        byte[] digest = m.digest();
+        BigInteger bigInt = new BigInteger(1, digest);
+        String hashtext = bigInt.toString(16);
 
-        for (Entry<String, String> entry : RECEIVED_VALUES_PAIRS.entrySet())
-            if (tag.equals(entry.getKey()))
-                return entry.getValue();
-
-        return null;
-    }*/
+        while (hashtext.length() < 32)
+            hashtext = "0" + hashtext;
+        return hashtext;
+    }
 }
