@@ -59,7 +59,7 @@ class ApiResponser {
     }
 
     private static function passwordlessJSON($json) {
-        DataPresenter::setVar($json, Tags::$TAG_CHANNEL_PASS);
+        DataPresenter::setVar($json, Tags::TAG_CHANNEL_PASS);
         return $json;
     }
 }
