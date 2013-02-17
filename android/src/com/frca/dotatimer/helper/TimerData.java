@@ -15,10 +15,13 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.widget.Toast;
 
-public class TimerData
-{
-    public static final String TAG_NICK = "nick";
+public class TimerData {
+    /*public static final String TAG_NICK = "nick";
+    public static final String TAG_PASSWORD = "password";*/
+    public static final String TAG_ACCOUNT = "account";
+    public static final String TAG_DISPLAY_NAME = "display_name";
     public static final String TAG_VALUE = "value";
+    public static final String TAG_USER_ID = "user_id";
 
     public static final String TAG_CHANNEL_NAME = "channel_name";
     public static final String TAG_CHANNEL_PASS = "channel_pass";
@@ -43,36 +46,32 @@ public class TimerData
 
     private boolean filled;
 
-    public class DataPair
-    {
+    public class DataPair {
         public final Date date;
         public final String value;
         public final String nick;
 
-        private DataPair(JSONObject json)
-        {
-            nick = JSONParser.getStringOrNull(json, TAG_NICK);
+        private DataPair(JSONObject json) {
+            nick = JSONParser.getStringOrNull(json, TAG_USER_ID);
             value = JSONParser.getStringOrNull(json, TAG_VALUE);
 
             Date tempDate = null;
             try {
                 int intVal = Integer.parseInt(value);
-                long msVal = (long)intVal * 1000;
+                long msVal = (long) intVal * 1000;
                 tempDate = new Date(msVal);
-            } catch (NumberFormatException e) { }
+            } catch (NumberFormatException e) {
+            }
             date = tempDate;
         }
     }
 
-    private class UserList extends ArrayList<UserData>
-    {
+    public class UserList extends ArrayList<UserData> {
         private static final long serialVersionUID = 1L;
 
-        private UserList(JSONArray jsonArr)
-        {
+        private UserList(JSONArray jsonArr) {
             JSONObject json;
-            for (int i = 0; i < jsonArr.length(); ++i)
-            {
+            for (int i = 0; i < jsonArr.length(); ++i) {
                 try {
                     json = jsonArr.getJSONObject(i);
                     add(new UserData(json));
@@ -81,50 +80,50 @@ public class TimerData
                 }
             }
         }
+
+        public ArrayList<String> userNicks() {
+            ArrayList<String> list = new ArrayList<String>();
+            for (UserData data : this)
+                list.add(data.nick);
+
+            return list;
+        }
     }
 
-    private class UserData
-    {
+    public class UserData {
         public final String nick;
         public final String state;
         public final String reason;
 
-        private UserData(JSONObject json)
-        {
-            nick = JSONParser.getStringOrNull(json, TAG_NICK);
+        private UserData(JSONObject json) {
+            nick = JSONParser.getStringOrNull(json, TAG_USER_ID);
             state = JSONParser.getStringOrNull(json, TAG_STATE);
             reason = JSONParser.getStringOrNull(json, TAG_REASON);
         }
     }
 
-    private TimerData()
-    {
+    private TimerData() {
         filled = false;
     }
 
-    public static TimerData fromJSON(JSONObject jsonObj)
-    {
+    public static TimerData fromJSON(JSONObject jsonObj) {
         TimerData data = new TimerData();
         data.parseJSON(jsonObj);
         return data;
     }
 
-    public static TimerData fromFile(Context context, String channel)
-    {
+    public static TimerData fromFile(Context context, String channel) {
         TimerData data = new TimerData();
-        data.loadFromFile(context, channel+".json");
+        data.loadFromFile(context, channel + ".json");
         return data;
     }
 
-    public void reloadFromFile(Context context)
-    {
-        loadFromFile(context, channelName+".json");
+    public void reloadFromFile(Context context) {
+        loadFromFile(context, channelName + ".json");
     }
 
-    public void loadFromFile(Context context, String fileName)
-    {
-        try
-        {
+    public void loadFromFile(Context context, String fileName) {
+        try {
             FileInputStream fis = context.openFileInput(fileName);
             StringBuffer fileContent = new StringBuffer("");
 
@@ -145,8 +144,7 @@ public class TimerData
         }
     }
 
-    public void parseJSON(JSONObject json)
-    {
+    public void parseJSON(JSONObject json) {
         if (filled && isUpdated(json))
             return;
 
@@ -156,9 +154,8 @@ public class TimerData
         int changeInt = JSONParser.getIntOrNil(json, TAG_CHANGED);
         if (changeInt == 0)
             changedAt = null;
-        else
-        {
-            long changeMs = (long)changeInt * 1000;
+        else {
+            long changeMs = (long) changeInt * 1000;
             changedAt = new Date(changeMs);
         }
 
@@ -181,35 +178,31 @@ public class TimerData
         filled = true;
     }
 
-    private boolean isUpdated(JSONObject newJson)
-    {
+    private boolean isUpdated(JSONObject newJson) {
         int newChangeInt = JSONParser.getIntOrNil(newJson, TAG_CHANGED);
         if (newChangeInt == 0)
             return false;
 
         long currChangedMs = changedAt != null ? changedAt.getTime() : 0;
-        return currChangedMs != (long)newChangeInt * 1000;
+        return currChangedMs != (long) newChangeInt * 1000;
     }
 
-    public String getTimerString()
-    {
+    public String getTimerString() {
         if (timer.date == null)
             return "";
 
         return dateFormat.format(timer.date);
     }
 
-    public String getRemainingString()
-    {
+    public String getRemainingString() {
         if (timer.date == null)
             return "";
 
         long diff = System.currentTimeMillis() - timer.date.getTime();
-        return timePassed((int)(diff/1000));
+        return timePassed((int) (diff / 1000));
     }
 
-    private static String timePassed(int time)
-    {
+    private static String timePassed(int time) {
         boolean positive = time >= 0;
         if (!positive)
             time *= -1;
@@ -219,8 +212,7 @@ public class TimerData
         return prepand + " " + value;
     }
 
-    public boolean isDeleted()
-    {
+    public boolean isDeleted() {
         return Constants.isValid(delete.value);
     }
 }

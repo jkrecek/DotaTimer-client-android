@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="author" content="frca" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <title>ApiTester</title>
+
+        <script type="text/javascript" src="/js/jquery.min.js"></script>
+        <script type="text/javascript" src="/js/jquery.cookie.js"></script>
+        <script type="text/javascript" src="/js/jquery.nette.js"></script>
+        <script type="text/javascript" src="/js/jquery.ajaxform.js"></script>
+        <script type="text/javascript" src="/js/ApiTester.js"></script>
+
+        <style>
+            p {
+                display: table-row;
+            }
+            p * {
+                display: table-cell;
+                padding: 5px;
+            }
+            p label {
+                vertical-align: top;
+                font-weight: bold;
+            }
+
+            p.title {
+                height: 80px;
+            }
+            p.title label {
+                vertical-align: bottom;
+                font-size: 20px;
+                font-family: Gill, Helvetica, sans-serif ;
+            }
+        </style>
+    </head>
+    <body>
+        <p class="title">
+            <label>Request</label>
+        </p>
+        <p>
+            <label>Relative route</label>
+            <input type="text" id="url" />
+        </p>
+        <p>
+            <label>Args</label>
+            <textarea id="args" cols="100" rows="8" > </textarea>
+        </p>
+        <p>
+            <label>Method</label>
+            <select id="method" >
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+            </select>
+        </p>
+        <p>
+            <span class="empty"></span>
+            <button id="submit" > Send </button>
+        </p>
+
+        <p class="result_p title">
+            <label>Response</label>
+        </p>
+
+        <p class="result_p">
+            <label>Status</label>
+            <span id="status"></span>
+        </p>
+        <p class="result_p">
+            <label>Output</label>
+            <textarea id="result" cols="100" rows="8" > </textarea>
+        </p>
+    </body>
+</html>

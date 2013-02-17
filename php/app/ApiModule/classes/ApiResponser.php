@@ -2,66 +2,73 @@
 
 namespace ApiModule;
 
-use Nette\Application\Responses\TextResponse,
-    Nette\Application\Responses\JsonResponse;
+use \Nette\Application\Responses\TextResponse,
+    \Nette\Application\Responses\JsonResponse,
+    \Nette\Http\Response;
+
+
 
 class ApiResponser {
 
-    public static function returnBadRequest($additional="") {
-        self::getResponse(DataPresenter::$instance)->setCode(\Nette\Http\Response::S400_BAD_REQUEST);
-        $response = "Bad request";
-        if ($additional)
-            $response .= " - '".$additional."'";
+    /** @var ApiPresenter */
+    private $presenter;
 
-        DataPresenter::$instance->sendResponse(new TextResponse($response));
+    /** @var Nette\Http\Response */
+    private $response;
+
+    public function __construct(ApiPresenter $presenter) {
+        $this->presenter = $presenter;
+        //$this->response = $this->presenter->getService('httpResponse');
+        $this->response = $this->presenter->getResponse();
     }
 
-    public static function returnUnauthorized($additional="") {
-        self::getResponse(DataPresenter::$instance)->setCode(\Nette\Http\Response::S401_UNAUTHORIZED);
-        $response = "Unauthorized";
-        if ($additional)
-            $response .= " - '".$additional."'";
+    /*
+     * Exception handle
+     */
 
-        DataPresenter::$instance->sendResponse(new TextResponse($response));
+    public function exceptionEscape(\Exception $e) {
+        $additionalMessage = $e->getMessage();
+
+        if ($e instanceof BaseException) {
+            $this->response->setCode($e->getStatusCode());
+            $response = $e->getName();
+            if ($additionalMessage)
+                $response .= " - '" . $additionalMessage . "'";
+
+            $this->presenter->sendResponse(new TextResponse($response));
+        }
+        else
+            throw $e;
     }
 
-    public static function returnForbidden($additional="") {
-        self::getResponse(DataPresenter::$instance)->setCode(\Nette\Http\Response::S403_FORBIDDEN);
-        $response = "Forbidden";
-        if ($additional)
-            $response .= " - '".$additional."'";
+    /*
+     * Success handlers
+     */
 
-        DataPresenter::$instance->sendResponse(new TextResponse($response));
+    public function OK($json) {
+        $this->response->setCode(Response::S200_OK);
+        $this->presenter->sendResponse(new JsonResponse($json));
     }
 
-    public static function returnOK() {
-        self::getResponse(DataPresenter::$instance)->setCode(\Nette\Http\Response::S200_OK);
-        DataPresenter::$instance->sendResponse(new JsonResponse(self::passwordlessJSON(DataPresenter::$instance->json)));
+    public function Created($json) {
+        $this->response->setCode(201);
+        $this->presenter->sendResponse(new JsonResponse($json));
     }
 
-    public static function returnCreated() {
-        self::getResponse(DataPresenter::$instance)->setCode(201);
-        DataPresenter::$instance->sendResponse(new JsonResponse(self::passwordlessJSON(DataPresenter::$instance->json)));
+    public function Accepted($json) {
+        $this->response->setCode(202);
+        $this->presenter->sendResponse(new JsonResponse($json));
     }
 
-    public static function returnAccepted() {
-        self::getResponse(DataPresenter::$instance)->setCode(202);
-        DataPresenter::$instance->sendResponse(new JsonResponse(self::passwordlessJSON(DataPresenter::$instance->json)));
-    }
+    /*public function Unchanged() {
+        $this->response->setCode(Response::S304_NOT_MODIFIED);
+        $this->presenter->sendResponse(new TextResponse("Not modified"));
+    }*/
 
-    public static function returnUnchanged() {
-        self::getResponse(DataPresenter::$instance)->setCode(\Nette\Http\Response::S200_OK);
-        DataPresenter::$instance->sendResponse(new TextResponse("Unchanged"));
-    }
-
-    private static function getResponse() {
-        return DataPresenter::$instance->getService('httpResponse');
-    }
-
-    private static function passwordlessJSON($json) {
+    /*private function passwordlessJSON($json) {
         DataPresenter::setVar($json, Tags::TAG_CHANNEL_PASS);
         return $json;
-    }
+    }*/
 }
 
 

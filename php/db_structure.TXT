@@ -1,0 +1,24 @@
+users {
+  id: autoincrement id
+  account: google acc
+  authToken: auth token
+  displayName: pøezdívka
+}
+
+team {
+   id: autoincrement id
+   name: jméno týmu
+   password: heslo tymu v hashi
+   changed: posl update
+   timerVal: nastavenej timer
+   timerAuthor: author timeru
+   deleteReason: proè byl timer zrušenej
+   deleteAuthor: kým
+}
+
+user_teams {
+  userId: id uživatele
+  teamId: id týmu  
+  state: ready neready
+  reason: duvod 
+}

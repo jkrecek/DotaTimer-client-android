@@ -6,6 +6,12 @@
 #
 common:
     parameters:
+        database:
+            driver: mysql
+            host: localhost
+            dbname: dotatimer
+            user: root
+            password: usbw
 
     php:
         date.timezone: Europe/Prague
@@ -16,9 +22,13 @@ common:
             errorPresenter: Error
 
         database:
-            dsn: 'mysql:host=localhost;dbname=test'
-            user:
-            password:
+            default:
+                dsn: '%database.driver%:host=%database.host%;dbname=%database.dbname%'
+                user: %database.user%
+                password: %database.password%
+                debugger: true
+                explain: true
+                reflection: discovered
 
         session:
             expiration: 14 days
@@ -27,6 +37,8 @@ common:
     services:
         routerFactory: RouterFactory
         router: @routerFactory::createRouter
+        database: @nette.database.default
+        model: Model( @database )
 
 
     factories:

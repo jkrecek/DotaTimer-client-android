@@ -1,141 +1,110 @@
 <?php
 namespace ApiModule;
 
-use \Nette\Application\ForbiddenRequestException,
-    \Nette\Application\BadRequestException,
-    \stdClass as JSONObject;
+class DataPresenter extends ApiPresenter {
 
-class DataPresenter extends \BasePresenter {
-    public $json;
+    /** @var User */
+    private $user;
 
-    private $id;
-    private $nick;
-    private $password;
+    //private $password;
 
-    private $request;
-
-    public static $instance;
-
-    public function startup() {
-        self::$instance = $this;
-        parent::startup();
+    final protected function handleShared() {
+        $this->checkRequest();
     }
 
-    public function actionRead($format, $data, $id, $query = array(), $associations = array()) {
-        try {
-            $this->setInitial($id, $query);
-            $this->loadLocalJSON();
-            $this->checkPassword();
-            $updateSince = self::getVar($this->request, Tags::TAG_CHANGED);
-            if (!$updateSince || $updateSince == self::getVar($this->json, Tags::TAG_CHANGED))
-                ApiResponser::returnOK();
-            else
-                ApiResponser::returnUnchanged();
-        } catch (ForbiddenRequestException $e) {
-            ApiResponser::returnForbidden($e->getMessage());
-        } catch (BadRequestException $e) {
-            ApiResponser::returnBadRequest($e->getMessage());
-        }
+    final protected function handleRead() {
+        $updateSince = $this->request->get(Tags::TAG_CHANGED);
+
+        $team = Team::fromDbUsersTeam($this->user, true, $this->id, $this->model, $updateSince);
+        $team->replaceUserIdsWithNames($this->model);
+
+        $this->sendResponse(new \Nette\Application\Responses\TextResponse(json_encode($team)));
+        $this->responser->OK(json_decode(json_encode($team)));
     }
 
-    public function actionCreate($format, $data, $id, $query = array(), $associations = array()) {
-        try {
-            $this->setInitial($id, $data);
-
-            $this->loadLocalJSON();
-            if ($this->json == NULL)
-                $this->json = $this->createBaseJson();
-            else
-                $this->checkPassword();
-
-            $this->addDataToJson($this->json, self::createUserData($this->nick, "", ""));
-            $this->saveJson();
-
-            ApiResponser::returnCreated();
-        } catch (ForbiddenRequestException $e) {
-            ApiResponser::returnForbidden($e->getMessage());
-        } catch (BadRequestException $e) {
-            ApiResponser::returnBadRequest($e->getMessage());
-        }
-    }
-
-    public function actionUpdate($format, $data, $id, $query = array(), $associations = array()) {
-        try {
-            $this->setInitial($id, $data);
-
-            $this->loadLocalJSON();
+    final protected function handleCreate() {
+        $this->loadLocalJSON();
+        if ($this->json == NULL)
+            $this->json = $this->createBaseJson();
+        else
             $this->checkPassword();
 
-            if (self::getVar($this->request, Tags::TAG_TIMER)) {
-                $timerTarget = self::getVar($this->request, Tags::TAG_TIMER);
+        $this->addDataToJson($this->json, self::createUserData($this->nick, "", ""));
+        $this->saveJson();
 
-                // timer
-                $newTimerObj = new JSONObject();
-                self::setVar($newTimerObj, Tags::TAG_VALUE, $timerTarget);
-                self::setVar($newTimerObj, Tags::TAG_NICK, $this->nick);
-                self::setVar($this->json, Tags::TAG_TIMER, $newTimerObj);
+        $this->responser->Created($this->json);
+    }
 
-                // delete
-                $newDeleteObj = new JSONObject();
-                self::setVar($newDeleteObj, Tags::TAG_VALUE);
-                self::setVar($newDeleteObj, Tags::TAG_NICK);
-                self::setVar($this->json, Tags::TAG_DELETE, $newDeleteObj);
+    final protected function handleUpdate() {
+        $this->loadLocalJSON();
+        $this->checkPassword();
 
-                // users
-                $allUsers = self::getVar($this->json, Tags::TAG_USERS);
-                foreach ($allUsers as $user) {
-                    self::setVar($user, Tags::TAG_STATE);
-                    self::setVar($user, Tags::TAG_REASON);
-                }
-            } elseif(self::getVar($this->request, Tags::TAG_DELETE)) {
-                $deleteReason = self::getVar($this->request, Tags::TAG_DELETE);
+        if (self::getVar($this->request, Tags::TAG_TIMER)) {
+            $timerTarget = self::getVar($this->request, Tags::TAG_TIMER);
 
-                $newObj = new JSONObject();
-                self::setVar($newObj, Tags::TAG_VALUE, $deleteReason);
-                self::setVar($newObj, Tags::TAG_NICK, $this->nick);
+        // timer
+        $newTimerObj = new JSONObject();
+        self::setVar($newTimerObj, Tags::TAG_VALUE, $timerTarget);
+        self::setVar($newTimerObj, Tags::TAG_NICK, $this->nick);
+        self::setVar($this->json, Tags::TAG_TIMER, $newTimerObj);
 
-                self::setVar($this->json, Tags::TAG_DELETE, $newObj);
-            } elseif (self::getVar($this->request, Tags::TAG_STATE)) {
-                $state = self::getVar($this->request, Tags::TAG_STATE);
-                $reason = self::getVar($this->request, Tags::TAG_REASON);
-                if (!$reason)
-                    $reason = "";
+        // delete
+        $newDeleteObj = new JSONObject();
+        self::setVar($newDeleteObj, Tags::TAG_VALUE);
+        self::setVar($newDeleteObj, Tags::TAG_NICK);
+        self::setVar($this->json, Tags::TAG_DELETE, $newDeleteObj);
 
-                $this->addDataToJson($this->json, self::createUserData($this->nick, $state, $reason));
-            } else
-                throw new BadRequestException("Nothing to do");
-
-            $this->saveJson();
-            ApiResponser::returnAccepted();
-        } catch (ForbiddenRequestException $e) {
-            ApiResponser::returnForbidden($e->getMessage());
-        } catch (BadRequestException $e) {
-            ApiResponser::returnBadRequest($e->getMessage());
+        // users
+        $allUsers = self::getVar($this->json, Tags::TAG_USERS);
+        foreach ($allUsers as $user) {
+            self::setVar($user, Tags::TAG_STATE);
+            self::setVar($user, Tags::TAG_REASON);
         }
+        } elseif(self::getVar($this->request, Tags::TAG_DELETE)) {
+            $deleteReason = self::getVar($this->request, Tags::TAG_DELETE);
+
+            $newObj = new JSONObject();
+            self::setVar($newObj, Tags::TAG_VALUE, $deleteReason);
+            self::setVar($newObj, Tags::TAG_NICK, $this->nick);
+
+            self::setVar($this->json, Tags::TAG_DELETE, $newObj);
+        } elseif (self::getVar($this->request, Tags::TAG_STATE)) {
+            $state = self::getVar($this->request, Tags::TAG_STATE);
+            $reason = self::getVar($this->request, Tags::TAG_REASON);
+            if (!$reason)
+                $reason = "";
+
+            $this->addDataToJson($this->json, self::createUserData($this->nick, $state, $reason));
+        } else
+            throw new BadRequestException("Nothing to do");
+
+        $this->saveJson();
+
+        $this->responser->Accepted($this->json);
     }
 
 
-    private function setInitial($id, $request) {
-        $jsonString = is_array($request) ? json_encode($request) : $request;
-        $this->request = json_decode($jsonString);
-
-        if (!$this->request)
-            throw new BadRequestException("Bad values supplied.");
-
-        $this->id = $id ? $id : self::getVar($this->request, Tags::TAG_CHANNEL_NAME);
+    private function checkRequest() {
         if (!$this->id)
-            throw new ForbiddenRequestException("Channel name is required.");
+            $this->id = $this->request->get(Tags::TAG_TEAM_NAME);
 
-        $this->password = self::getVar($this->request, Tags::TAG_CHANNEL_PASS);
-        if (!$this->password)
-            throw new ForbiddenRequestException("JSON: Password is required.");
+        if (!$this->id)
+            throw new BadRequestException("Name of team must be supplied.");
 
-        $this->nick = self::getVar($this->request, Tags::TAG_NICK);
-        if (!$this->nick)
-            throw new BadRequestException("JSON: Author nick is required.");
+        $account = $this->request->get(Tags::TAG_ACCOUNT);
+        $authToken = $this->request->get(Tags::TAG_AUTH_TOKEN);
+        if (!$account || !$authToken)
+            throw new BadRequestException("User must indentify with his account and authToken.");
+
+        $dbUserData = $this->model->getUserByAccount($account, $authToken);
+
+        if (!$dbUserData->authOK)
+            throw new UnauthorizedException("Incorrect auth token.");
+
+        $this->user = User::fromDb($dbUserData);
     }
 
-    private function loadLocalJSON() {
+    /*private function loadLocalJSON() {
         if ($this->json == NULL) {
             $filename =  $this->getRouteToJSON($this->id);
             if (file_exists($filename)) {
@@ -147,7 +116,7 @@ class DataPresenter extends \BasePresenter {
         }
 
         return $this->json;
-    }
+    }*/
 
     private function checkPassword() {
         $receivedPass = $this->password;
@@ -185,17 +154,6 @@ class DataPresenter extends \BasePresenter {
         self::setVar($newJson, Tags::TAG_USERS, array());
 
         return $newJson;
-    }
-
-    public static function setVar($stdClass, $variableName, $value = "") {
-        $stdClass->$variableName = $value;
-    }
-
-    private static function getVar($stdClass, $variableName) {
-        if (isset($stdClass->$variableName))
-            return $stdClass->$variableName;
-        else
-            return NULL;
     }
 
     private function addDataToJson($json, $userJson) {

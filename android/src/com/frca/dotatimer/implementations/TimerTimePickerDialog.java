@@ -8,24 +8,21 @@ import android.widget.TimePicker;
 
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.TimerData;
-import com.frca.dotatimer.tasks.DataUpdateTask;
+import com.frca.dotatimer.tasks.RequestManager;
 
-public class TimerTimePickerDialog implements TimePickerDialog.OnTimeSetListener
-{
+public class TimerTimePickerDialog implements TimePickerDialog.OnTimeSetListener {
     boolean handled = false;
 
     private final Context context;
     private final Calendar timerPicker;
 
-    public TimerTimePickerDialog(Context con, Calendar cal)
-    {
+    public TimerTimePickerDialog(Context con, Calendar cal) {
         context = con;
         timerPicker = cal;
     }
 
     @Override
-    public void onTimeSet(TimePicker view, int hour, int minute)
-    {
+    public void onTimeSet(TimePicker view, int hour, int minute) {
         if (handled)
             return;
 
@@ -35,9 +32,10 @@ public class TimerTimePickerDialog implements TimePickerDialog.OnTimeSetListener
         timerPicker.set(Calendar.MINUTE, minute);
         timerPicker.set(Calendar.SECOND, 0);
 
-        int time = (int) (timerPicker.getTimeInMillis()/1000);
+        int time = (int) (timerPicker.getTimeInMillis() / 1000);
         ParameterMap params = new ParameterMap(context);
         params.put(TimerData.TAG_TIMER, Integer.toString(time));
-        new DataUpdateTask(context, params).execute();
+
+        RequestManager.requestTeamUpdate(context, params);
     }
 }

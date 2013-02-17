@@ -3,11 +3,13 @@ namespace ApiModule;
 
 final class Tags {
 
-    const TAG_NICK = "nick";
+    const TAG_ACCOUNT = "account";
+    const TAG_AUTH_TOKEN = "authToken";
+
     const TAG_VALUE = "value";
 
-    const TAG_CHANNEL_NAME = "channel_name";
-    const TAG_CHANNEL_PASS = "channel_pass";
+    const TAG_TEAM_NAME = "name";
+    const TAG_TEAM_PASS = "pass";
     const TAG_CHANGED = "changed";
 
     const TAG_TIMER = "timer";

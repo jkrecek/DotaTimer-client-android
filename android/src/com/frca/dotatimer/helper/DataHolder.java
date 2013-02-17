@@ -16,8 +16,7 @@ public class DataHolder {
 
     public static Map<String, TimerData> datas = new HashMap<String, TimerData>();
 
-    public static TimerData getTimerData(Context context, String channelName)
-    {
+    public static TimerData getTimerData(Context context, String channelName) {
         if (datas.containsKey(channelName))
             return datas.get(channelName);
 
@@ -26,8 +25,7 @@ public class DataHolder {
         return newData;
     }
 
-    public static TimerData saveJSON(Context context, JSONObject json)
-    {
+    public static TimerData saveJSON(Context context, JSONObject json) {
         saveJSONtoFile(context, json);
 
         TimerData timer;
@@ -40,14 +38,11 @@ public class DataHolder {
             return null;
         }
 
-        if (datas.containsKey(channelName))
-        {
+        if (datas.containsKey(channelName)) {
             timer = datas.get(channelName);
             timer.parseJSON(json);
 
-        }
-        else
-        {
+        } else {
             timer = TimerData.fromJSON(json);
             datas.put(channelName, timer);
         }
@@ -55,17 +50,16 @@ public class DataHolder {
         return timer;
     }
 
-    public static TimerData getFirstTimerData(Context context)
-    {
-        return getTimerData(context, Preferences.getPreferences(context).getChannelName());
+    public static TimerData getFirstTimerData(Context context) {
+        return null;
+        // return getTimerData(context, Preferences.getPreferences(context).getChannelName());
     }
 
-    public static void saveJSONtoFile(Context context, JSONObject json)
-    {
+    public static void saveJSONtoFile(Context context, JSONObject json) {
         String channelName = JSONParser.getStringOrNull(json, TimerData.TAG_CHANNEL_NAME);
 
         try {
-            FileOutputStream fos = context.openFileOutput(channelName+".json", Context.MODE_PRIVATE);
+            FileOutputStream fos = context.openFileOutput(channelName + ".json", Context.MODE_PRIVATE);
             String jsonString = json.toString();
             jsonString += "\n";
             fos.write(jsonString.getBytes());
