@@ -2,7 +2,8 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users`(
      `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
      `account` VARCHAR(100) UNIQUE NOT NULL ,
-     `authToken` VARCHAR(50) NOT NULL ,
+     `googleToken` VARCHAR(50) NOT NULL ,
+     `appToken` VARCHAR(50) NOT NULL ,
      `displayName` VARCHAR(20) UNIQUE NOT NULL ,
      PRIMARY KEY (`id`)
 )  ENGINE=INNODB COMMENT='' ROW_FORMAT=DEFAULT  ;

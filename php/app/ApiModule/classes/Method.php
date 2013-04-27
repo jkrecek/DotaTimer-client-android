@@ -26,5 +26,16 @@ class Method {
 
         return true;
     }
+
+    public static function lastWord($string, $strip = false) {
+        $last_word = substr($string, strrpos($string, " ") + 1);
+        if ($strip) {
+            return strtr($last_word, array(
+            '\'' => '',
+            '\"' => '',
+            ));
+        } else
+            return $last_word;
+    }
 }
 

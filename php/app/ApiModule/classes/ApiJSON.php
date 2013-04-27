@@ -10,14 +10,15 @@ class ApiJSON {
     private function __construct($json) {
         $this->json = $json;
     }
-    /**
-     * @param String
-     */
 
     public static function getEmptyInstance() {
         $instance = new ApiJSON(new \stdClass());
         return $instance;
     }
+
+    /**
+     * @param String
+     */
 
     public static function load($jsonString) {
         $instance = new ApiJSON(json_decode($jsonString));
@@ -28,7 +29,7 @@ class ApiJSON {
         if (isset($this->json->$key))
             return $this->json->$key;
         else
-            return NULL;
+            throw new BadRequestException("Request does not contain key '".$key."'.");
     }
 
     public function set($key, $value) {
@@ -37,5 +38,9 @@ class ApiJSON {
 
     public function remove($key) {
         unset($this->json->$key);
+    }
+
+    public function toJson() {
+        return $this->json;
     }
 }

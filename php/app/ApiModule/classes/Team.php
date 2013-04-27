@@ -39,6 +39,13 @@ class TeamUser {
 
     }
 
+    /**
+     *
+     * @param int $userId
+     * @param int $state
+     * @param string $reason
+     * @return \ApiModule\TeamUser
+     */
     public static function create($userId, $state, $reason) {
         $user = new TeamUser();
         $user->user = $userId;
@@ -75,18 +82,19 @@ class Team extends \stdClass {
      * @param \Model $model
      * @return \ApiModule\Team
      */
-    public static function createNewTeam($data, \Model $model) {
-        $user = new Team();
-        $data = array(
-            "account" => $account,
-            "authToken" => Method::generateString(40),
-            "displayName" => $displayName
-        );
-        $model->insertUser($data);
+    public static function createNewTeam($name, $passwordHash, \Model $model) {
 
-        $user->id = $model->database->lastInsertId();
-        $user->account = $account;
-        $user->displayName = $displayName;
+        $data = array(
+            "name" => $name,
+            "password" => $passwordHash
+        );
+
+        $team = self::fromDb($model->insertTeam($data));
+
+        $team = new Team();
+        $team->id = $model->database->lastInsertId();
+        /*$user->account = $account;
+        $user->displayName = $displayName;*/
 
         return $user;
     }
@@ -145,7 +153,7 @@ class Team extends \stdClass {
         // values already converted on in bad format
         if (!Method::containtsOnlyInt($uniqueIds))
             return;
-        
+
         $searchCount = count($uniqueIds);
         $dbDisplayNames = $model->getDisplayNamesForIds($uniqueIds);
         $displayNames = array();
@@ -161,7 +169,6 @@ class Team extends \stdClass {
 
         foreach ($this->users as $user)
             $user->user = $displayNames[$user->user];
-
     }
 }
 

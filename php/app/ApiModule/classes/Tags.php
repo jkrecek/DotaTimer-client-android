@@ -4,7 +4,10 @@ namespace ApiModule;
 final class Tags {
 
     const TAG_ACCOUNT = "account";
-    const TAG_AUTH_TOKEN = "authToken";
+    const TAG_GOOGLE_TOKEN = "googleToken";
+    const TAG_APP_TOKEN = "appToken";
+
+    const TAG_DISPLAY_NAME = "displayName";
 
     const TAG_VALUE = "value";
 

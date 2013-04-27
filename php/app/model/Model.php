@@ -44,8 +44,8 @@ class Model extends Nette\Object
     /**
      * Returns user DB entry
      * @param String
-	 * @return ActiveRow or FALSE if there is no row
-	 */
+     * @return ActiveRow or FALSE if there is no row
+     */
     public function getUserByAccount($account, $authToken) {
         return $this->getUsers()
                 ->where("account", $account)
@@ -93,7 +93,10 @@ class Model extends Nette\Object
         return $this->getUsers()
                 ->where("id", $userIds)
                 ->select("id, displayName");
-
     }
 
+    public function insertTeam(array $data) {
+        return $this->getTeam()
+                ->insert($data);
+    }
  }

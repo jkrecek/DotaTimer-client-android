@@ -25,8 +25,12 @@ class ApiPresenter extends \BasePresenter {
         $this->model = $this->getService('model');
     }
 
-    final public function getResponse() {
+    final public function getResponseHeader() {
         return $this->getHttpResponse();
+    }
+
+    final public function getResponseJson() {
+        return $this->response->toJson();
     }
 
     final public function actionRead($format, $data, $id, $query = array(), $associations = array()) {
@@ -60,7 +64,7 @@ class ApiPresenter extends \BasePresenter {
     }
 
     private function loadRequest($format, $id, $request) {
-        if ($format != "json")
+        if ($format != "json" && $this->getRequest()->getMethod() != "GET")
             throw new NoContentException("Api supports only json requests");
 
         $this->id = $id;
