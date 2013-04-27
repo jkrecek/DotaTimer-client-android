@@ -9,6 +9,8 @@ $(document).ready(function() {
         $('#args').text($.cookie("fArgs"));
     if ($.cookie("fUrl") != undefined)
         $('#url').val($.cookie("fUrl"));
+    if ($.cookie("fMethod") != undefined)
+        $('#method').val($.cookie("fMethod"));
 
     $("#submit").click(buttonClick);
 });
@@ -25,6 +27,7 @@ function buttonClick() {
 
     url = "/" + getRelativeUrl();
     method = getMethod();
+    $.cookie("fMethod", method, {path: '/', expires: 7});
     post = "";
     if (method == "GET") {
         if (args)
