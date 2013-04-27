@@ -3,12 +3,13 @@
 namespace AdamStipak;
 
 use Nette\Application\IRouter;
-use Nette\NotImplementedException;
-use Nette\InvalidStateException;
+use Nette\InvalidArgumentException;
 use Nette\Http\Request as HttpRequest;
 use Nette\Application\Request;
 use Nette\Http\IRequest;
 use Nette\Http\Url;
+use Nette\InvalidStateException;
+use Nette\Utils\Strings;
 
 /**
  * @autor Adam Štipák <adam.stipak@gmail.com>
@@ -21,56 +22,80 @@ class RestRoute implements IRouter {
   /** @var string */
   protected $module;
 
+  /** @var boolean */
+  protected $useReadAllAction;
+
   /** @var array */
-  protected $formats = array('json');
+  protected $formats = array(
+    'json' => 'application/json',
+    'xml'  => 'application/xml',
+  );
+
+  /** @var string */
+  private $requestUrl;
+
+  /** @var string */
+  protected $defaultFormat;
 
   const HTTP_HEADER_OVERRIDE = 'X-HTTP-Method-Override';
 
   const QUERY_PARAM_OVERRIDE = '__method';
 
-  public function __construct($module, array $formats) {
+  public function __construct($module = NULL, $defaultFormat = 'json') {
+    if(!array_key_exists($defaultFormat, $this->formats)) {
+      throw new InvalidArgumentException("Format '{$defaultFormat}' is not allowed.");
+    }
+
     $this->module = $module;
-    $this->formats = $formats;
+    $this->defaultFormat = $defaultFormat;
+    $this->useReadAllAction = FALSE;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDefaultFormat() {
+    return $this->defaultFormat;
   }
 
   /**
    * @return string
    */
   public function getPath() {
-    if (!$this->path) {
-      $path = implode('/', explode(':', $this->module));
-      $this->path = strtolower($path);
-    }
+    $path = implode('/', explode(':', $this->module));
+    $this->path = strtolower($path);
 
-    return $this->path;
+    return (string) $this->path;
   }
 
   /**
    * Maps HTTP request to a Request object.
    * @param \Nette\Http\IRequest $httpRequest
-   * @return Request|NULL
+   * @return \Nette\Application\Request|NULL
    */
   public function match(IRequest $httpRequest) {
-    $basePath = str_replace('/', '\/', $httpRequest->getUrl()->getBasePath());
-    $cleanPath = preg_replace("/^{$basePath}/", '', $httpRequest->getUrl()->getPath());
+    $url = $httpRequest->getUrl();
+    $basePath = str_replace('/', '\/', $url->getBasePath());
+    $cleanPath = preg_replace("/^{$basePath}/", '', $url->getPath());
 
-    $formats = implode('|', $this->formats);
     $path = str_replace('/', '\/', $this->getPath());
-    if (!preg_match("/^{$path}\/.+\.({$formats})$/", $cleanPath)) {
+    $pathRexExp = empty($path) ? "/^.+$/" : "/^{$path}\/.*$/";
+    if (!preg_match($pathRexExp, $cleanPath)) {
       return NULL;
     }
 
     $cleanPath = preg_replace('/^' . $path . '\//', '', $cleanPath);
 
     $params = array();
-    list($path, $params['format']) = explode('.', $cleanPath);
-    $this->checkFormat($params['format']);
+    $path = $cleanPath;
     $params['action'] = $this->detectAction($httpRequest);
     $frags = explode('/', $path);
 
-    // Identificator.
+    // Resource ID.
     if (count($frags) % 2 === 0) {
       $params['id'] = array_pop($frags);
+    } elseif ($params['action'] == 'read' && $this->useReadAllAction) {
+      $params['action'] = 'readAll';
     }
     $presenterName = ucfirst(array_pop($frags));
 
@@ -84,17 +109,23 @@ class RestRoute implements IRouter {
       }
     }
 
+    $params['format'] = $this->detectFormat($httpRequest);
     $params['associations'] = $assoc;
     $params['data'] = $this->readInput();
     $params['query'] = $httpRequest->getQuery();
 
-    $req = new Request(
-      $this->module . ':' . $presenterName,
+    $presenterName = empty($this->module) ? $presenterName : $this->module . ':' . $presenterName;
+
+    // Remember absolute URL for ::constructUrl(). It is one way route ;-).
+    $this->requestUrl = $url->getAbsoluteUrl();
+
+    $appRequest = new Request(
+      $presenterName,
       $httpRequest->getMethod(),
       $params
     );
 
-    return $req;
+    return $appRequest;
   }
 
   protected function detectAction(HttpRequest $request) {
@@ -122,10 +153,12 @@ class RestRoute implements IRouter {
 
   /**
    * @param \Nette\Http\Request $request
+   *
    * @return string
    */
   protected function detectMethod(HttpRequest $request) {
-    if ($request->getMethod() !== 'POST') {
+    $requestMethod = $request->getMethod();
+    if ($requestMethod !== 'POST') {
       return $request->getMethod();
     }
 
@@ -139,22 +172,32 @@ class RestRoute implements IRouter {
       return strtoupper($method);
     }
 
-    return $request->getMethod();
+    return $requestMethod;
   }
 
   /**
-   * @param $path
-   * @throws \Nette\NotImplementedException
+   * @param \Nette\Http\Request $request
    * @return string
    */
-  protected function checkFormat($path) {
-    $frags = explode('.', $path);
-    $format = end($frags);
-
-    if (!in_array($format, $this->formats)) {
-      throw new NotImplementedException("Format {$format} is not supported.");
+  private function detectFormat(HttpRequest $request) {
+    $header = $request->getHeader('Accept'); // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+    foreach ($this->formats as $format => $fullFormatName) {
+      $fullFormatName = Strings::replace($fullFormatName, '/\//', '\/');
+      if(Strings::match($header, "/{$fullFormatName}/")) {
+        return $format;
+      }
     }
-    return $format;
+
+    // Try retrieve fallback from URL.
+    $path = $request->getUrl()->getPath();
+    $formats = array_keys($this->formats);
+    $formats = implode('|', $formats);
+    if(Strings::match($path, "/\.({$formats})$/")) {
+      list($path, $format) = explode('.', $path);
+      return $format;
+    }
+
+    return $this->defaultFormat;
   }
 
   /**
@@ -164,56 +207,18 @@ class RestRoute implements IRouter {
     return file_get_contents('php://input');
   }
 
+  public function useReadAll() {
+    $this->useReadAllAction = TRUE;
+  }
+
   /**
    * Constructs absolute URL from Request object.
-   * @param Request $appRequest
+   * @param \Nette\Application\Request $appRequest
    * @param \Nette\Http\Url $refUrl
    * @throws \Nette\NotImplementedException
    * @return string|NULL
    */
   public function constructUrl(Request $appRequest, Url $refUrl) {
-    $cleanPath = str_replace($refUrl->getBasePath(), '', $refUrl->getPath());
-
-    $url = $this->getPath() . '/';
-    $params = $appRequest->getParameters();
-
-    if(!isset($params['associations'])) {
-      return NULL;
-    }
-
-    foreach ($params['associations'] as $k => $v) {
-      $url .= $k . '/' . $v;
-    }
-
-    $resource = explode(':', $appRequest->getPresenterName());
-    $resource = end($resource);
-    $resource = strtolower($resource);
-    $url .= (count($params['associations']) ? '/' : '') . $resource;
-
-    if(!isset($params['id'])) {
-      return NULL;
-    }    
-
-    if (!empty($params['id'])) {
-      $url .= '/' . $params['id'];
-    }
-
-    if(!isset($params['format'])) {
-      return NULL;
-    }
-
-    $url .= '.' . $params['format'];
-
-    if (count($params['query'])) {
-      $url .= '?' . http_build_query($params['query']);
-    }
-
-    $formats = implode('|', $this->formats);
-    $path = str_replace('/', '\/', $this->getPath());
-    if (!preg_match("/^{$path}\/.+\.({$formats})/", $url)) {
-      return NULL;
-    }
-
-    return $refUrl->baseUrl . $url;
+    return $this->requestUrl;
   }
 }
