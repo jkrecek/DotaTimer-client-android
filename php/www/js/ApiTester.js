@@ -27,7 +27,8 @@ function buttonClick() {
     method = getMethod();
     post = "";
     if (method == "GET") {
-        url += "?" + args;
+        if (args)
+            url += "?" + args;
     } else {
         post = args;
     }
