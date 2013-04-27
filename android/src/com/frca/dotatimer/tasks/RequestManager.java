@@ -2,6 +2,7 @@ package com.frca.dotatimer.tasks;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
@@ -91,13 +92,13 @@ public class RequestManager {
                     }
 
                     Preferences preferences = Preferences.getPreferences(request.getContext());
-                    if (Constants.isValid(teamName) && Constants.isValid(teamPassword)) {
+                    if (TextUtils.isEmpty(teamName) && TextUtils.isEmpty(teamPassword)) {
                         preferences.put(TimerData.TAG_CHANNEL_NAME, teamName);
                         preferences.put(TimerData.TAG_CHANNEL_PASS, teamPassword);
                         preferences.commit();
                     } else {
                         Toast.makeText(request.getContext(), "Chyba, data nemohla být uložena", Toast.LENGTH_LONG).show();
-                        Log.d("ActivityCreateTask", "Either channelName or channelPass is not supplied (name: '" + Constants.emptyNull(teamName) + "', pass: '" + Constants.emptyNull(teamPassword) + "')");
+                        Log.d("ActivityCreateTask", "Either channelName or channelPass is not supplied (name: '" + Constants.value(teamName) + "', pass: '" + Constants.value(teamPassword) + "')");
                     }
                 }
             }

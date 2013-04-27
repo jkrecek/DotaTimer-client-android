@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 public class TimerData {
@@ -168,7 +169,7 @@ public class TimerData {
             NotificationDataHolder.set(NotificationDataHolder.TYPE_TIMER, getTimerString());
 
         tempDataPair = new DataPair(JSONParser.getJSONOrNull(json, TAG_DELETE));
-        boolean deleteReasonChanged = Constants.isValid(tempDataPair.value) && !tempDataPair.value.equals(delete.value);
+        boolean deleteReasonChanged = TextUtils.isEmpty(tempDataPair.value) && !tempDataPair.value.equals(delete.value);
         delete = tempDataPair;
         if (deleteReasonChanged)
             NotificationDataHolder.set(NotificationDataHolder.TYPE_DELETE, delete.value);
@@ -213,6 +214,6 @@ public class TimerData {
     }
 
     public boolean isDeleted() {
-        return Constants.isValid(delete.value);
+        return TextUtils.isEmpty(delete.value);
     }
 }

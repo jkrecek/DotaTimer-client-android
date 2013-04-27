@@ -86,11 +86,11 @@ public class Constants {
         return Days + Hours + Minutes + Seconds;
     }
 
-    public static boolean isValid(String str) {
+    /*public static boolean isValid(String str) {
         return str != null && !str.equals("");
-    }
+    }*/
 
-    public static String emptyNull(String str) {
+    public static String value(String str) {
         if (str == null)
             return "";
 

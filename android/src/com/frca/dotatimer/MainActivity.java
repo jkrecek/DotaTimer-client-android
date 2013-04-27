@@ -19,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -148,14 +149,14 @@ public class MainActivity extends FragmentActivity {
 
     /*public void onPreferencesChanged(Map<String, Boolean> changedKeys) {
         if ((changedKeys.containsKey(TimerData.TAG_CHANNEL_NAME) && changedKeys.get(TimerData.TAG_CHANNEL_NAME)) || (changedKeys.containsKey(TimerData.TAG_CHANNEL_PASS) && changedKeys.get(TimerData.TAG_CHANNEL_PASS))) {
-            // if (Constants.isValid(preferences.getNick()))
+            // if (TextUtils.isEmpty(preferences.getNick()))
             // requestData();
             // else
             Dialog.showNick(this);
         }
 
         if (changedKeys.containsKey(TimerData.TAG_NICK) && changedKeys.get(TimerData.TAG_NICK)) {
-            if (Constants.isValid(preferences.getChannelName()) && Constants.isValid(preferences.getChannelPass()))
+            if (TextUtils.isEmpty(preferences.getChannelName()) && TextUtils.isEmpty(preferences.getChannelPass()))
                 requestData();
             else
                 Dialog.showJoin(this);
@@ -216,7 +217,7 @@ public class MainActivity extends FragmentActivity {
     private void loadOptions() {
         preferences = Preferences.getPreferences(this);
 
-        if (!Constants.isValid(preferences.getString(Preferences.Key.USER_ACCOUNT)))
+        if (!TextUtils.isEmpty(preferences.getString(Preferences.Key.USER_ACCOUNT)))
             startActivity(new Intent(this, LoginActivity.class));
         else {
             Toast.makeText(this, "Vítejte " + preferences.getString(Preferences.Key.USER_DISPLAY_NAME), Toast.LENGTH_LONG).show();

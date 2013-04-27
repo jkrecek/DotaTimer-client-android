@@ -2,6 +2,7 @@ package com.frca.dotatimer.implementations;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -9,7 +10,6 @@ import android.widget.Toast;
 
 import com.frca.dotatimer.MainActivity;
 import com.frca.dotatimer.R;
-import com.frca.dotatimer.helper.Constants;
 import com.frca.dotatimer.helper.ParameterMap;
 import com.frca.dotatimer.helper.TimerData;
 import com.frca.dotatimer.tasks.RequestManager;
@@ -68,9 +68,9 @@ public class Dialog {
             public void onClick(DialogInterface dialog, int id) {
                 String enteredChannel = inputChannel.getText().toString().trim();
                 String enteredPass = inputPass.getText().toString().trim();
-                if (!Constants.isValid(enteredChannel))
+                if (!TextUtils.isEmpty(enteredChannel))
                     Toast.makeText(activity, "Neplatné jméno kanálu", Toast.LENGTH_LONG).show();
-                else if (!Constants.isValid(enteredPass))
+                else if (!TextUtils.isEmpty(enteredPass))
                     Toast.makeText(activity, "Musíte zadat heslo", Toast.LENGTH_LONG).show();
                 else {
                     RequestManager.requestTeamAuthenticate(activity, enteredChannel, enteredPass);
@@ -100,7 +100,7 @@ public class Dialog {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 String deleteReason = input.getText().toString().trim();
-                if (!Constants.isValid(deleteReason)) {
+                if (!TextUtils.isEmpty(deleteReason)) {
                     Toast.makeText(activity, "Musíš uvést dùvod", Toast.LENGTH_LONG).show();
                     return;
                 }
