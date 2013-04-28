@@ -45,15 +45,15 @@ function load() {
         url: url,
         data: post,
         dataType: "text",
-        success: function(data) {
+        success: function(data, status, xhr) {
             $(".result_p").show();
-            $("#status").text("SUCCESS");
-            $("#result").text(data);
+            $("#status").text("SUCCESS, code: "+xhr.status+" ("+status+")");
+            $("#result").text(data? data : "");
         },
-        error: function(data) {
+        error: function(xhr, data, status) {
             $(".result_p").show();
-            $("#status").text("ERROR, code: "+data.status);
-            $("#result").text(data.responseText);
+            $("#status").text("ERROR, code: "+xhr.status + " ("+status+")");
+            $("#result").text(xhr.responseText ? xhr.responseText : "");
         }
     });
 }
