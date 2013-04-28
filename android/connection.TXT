@@ -2,6 +2,7 @@ User create: {
   invoked by: LoginActivity
   request: {
     mail,
+    googleToken,
     display name
   }
   response: {
@@ -18,11 +19,11 @@ User login {
   invoked by: LoginActivity
   request: {
     mail,
-    display name
+    googleToken
   }
   response: {
     login: {
-      201, authtoken, teams
+      201, apptoken, teams
     }
     wrong pass: {
       403
