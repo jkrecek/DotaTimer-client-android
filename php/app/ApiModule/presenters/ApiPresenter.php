@@ -1,7 +1,7 @@
 <?php
 namespace ApiModule;
 
-class ApiPresenter extends \BasePresenter {
+abstract class ApiPresenter extends \BasePresenter {
 
     /** @var ApiResponser */
     protected $responser;
@@ -65,7 +65,7 @@ class ApiPresenter extends \BasePresenter {
 
     private function loadRequest($format, $id, $request) {
         if ($format != "json" && $this->getRequest()->getMethod() != "GET")
-            throw new NoContentException("Api supports only json requests");
+            throw new BadRequestException("Api supports only json requests");
 
         $this->id = $id;
 
@@ -74,13 +74,13 @@ class ApiPresenter extends \BasePresenter {
     }
 
     protected function handleRead() {
-        throw new NoContentException("Api does not support this request");
+        throw new BadRequestException("Api does not support read request");
     }
     protected function handleCreate() {
-        throw new NoContentException("Api does not support this request");
+        throw new BadRequestException("Api does not support create request");
     }
     protected function handleUpdate() {
-        throw new NoContentException("Api does not support this request");
+        throw new BadRequestException("Api does not support update request");
     }
 
     /**

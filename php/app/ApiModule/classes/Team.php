@@ -58,19 +58,19 @@ class TeamUser {
 class Team extends \stdClass {
 
     /** @var int */
-    private $id;
+    public $id;
 
     /** @var string */
-    private $name;
+    public $name;
 
     /** @var ValueAuthorPair */
-    private $timer;
+    public $timer;
 
     /** @var ValueAuthorPair */
-    private $delete;
+    public $delete;
 
     /** @var array TeamUsers */
-    private $users = array();
+    public $users = array();
 
     private function __construct() {
 
@@ -89,27 +89,35 @@ class Team extends \stdClass {
             "password" => $passwordHash
         );
 
-        $team = self::fromDb($model->insertTeam($data));
+        $teamRow = $model->insertTeam($data);
 
-        $team = new Team();
-        $team->id = $model->database->lastInsertId();
+        $team = self::fromDb($teamRow, $model);
+
+        //$team = new Team();
+        //$team->id = $model->database->lastInsertId();
         /*$user->account = $account;
         $user->displayName = $displayName;*/
 
-        return $user;
+        return $team;
     }
 
-    public static function fromDb(ActiveRow $row, \Model $model = NULL) {
+    public static function fromDb(ActiveRow $row, \Model $model) {
         $team = new Team();
         $team->id = $row->id;
         $team->name = $row->name;
-        $team->timer = ValueAuthorPair::create($row->timerVal, $row->timerAuthor);
-        $team->delete = ValueAuthorPair::create($row->deleteVal, $row->deleteAuthor);
-        if ($model) {
-            $dbTeamUsers = $model->getUsersForTeam($team->id);
-            foreach($dbTeamUsers as $teamUser)
-                $team->users[] = TeamUser::create($teamUser->userId, $teamUser->state, $teamUser->reason);
-        }
+
+        if (!empty($row->timerVal) && !empty($row->timerAuthor))
+            $team->timer = ValueAuthorPair::create($row->timerVal, $row->timerAuthor);
+        else
+            $team->timer = ValueAuthorPair::create(NULL, NULL);
+
+        if (!empty($row->deleteVal) && !empty($row->deleteAuthor))
+            $team->delete = ValueAuthorPair::create($row->deleteVal, $row->deleteAuthor);
+        else
+            $team->delete = ValueAuthorPair::create(NULL, NULL);
+
+        $team->loadUsers($model);
+
         return $team;
     }
 
@@ -138,7 +146,20 @@ class Team extends \stdClass {
         throw new BadRequestException("User is not member of such team");
     }
 
-    public function replaceUserIdsWithNames(\Model $model) {
+    private function loadUsers(\Model $model) {
+        $dbTeamUsers = $model->getUsersForTeam($this->id);
+        foreach($dbTeamUsers as $teamUser)
+            $this->users[] = TeamUser::create($teamUser->userId, $teamUser->state, $teamUser->reason);
+    }
+
+    public function toOutputForm(\Model $model) {
+        if (empty($this->users))
+            $this->loadUsers($model);
+
+        $this->replaceUserIdsWithNames($model);
+    }
+
+    private function replaceUserIdsWithNames(\Model $model) {
         $collectedIds = array();
         if ($this->timer->author)
             $collectedIds[] = $this->timer->author;
@@ -164,12 +185,13 @@ class Team extends \stdClass {
         if ($searchCount != $resultCount)
             throw new BadRequestException("Some user references are missing (".$searchCount-$resultCount.")");
 
-        $this->timer->author = $displayNames[$this->timer->author];
-        $this->delete->author = $displayNames[$this->delete->author];
+        if ($this->timer->author)
+            $this->timer->author = $displayNames[$this->timer->author];
+        if ($this->delete->author)
+            $this->delete->author = $displayNames[$this->delete->author];
 
         foreach ($this->users as $user)
             $user->user = $displayNames[$user->user];
     }
 }
-
 

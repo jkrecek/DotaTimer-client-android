@@ -11,8 +11,8 @@ final class Tags {
 
     const TAG_VALUE = "value";
 
-    const TAG_TEAM_NAME = "name";
-    const TAG_TEAM_PASS = "pass";
+    const TAG_TEAM_NAME = "teamName";
+    const TAG_TEAM_PASS = "teamPass";
     const TAG_CHANGED = "changed";
 
     const TAG_TIMER = "timer";

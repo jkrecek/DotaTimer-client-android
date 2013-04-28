@@ -22,7 +22,7 @@ class Model extends Nette\Object
         return $this->database->table("users");
     }
 
-    public function getTeam() {
+    public function getTeams() {
         /*
          *  id, name, passwordHash, changed, timerValue, timerAuthor, deleteReason, deleteAuthor
          */
@@ -68,7 +68,7 @@ class Model extends Nette\Object
         if ($changed !== NULL)
             $select .= ", changed > ". $changed . " AS isModified";
 
-        return $this->getTeam()
+        return $this->getTeams()
                 ->where($where)
                 ->select($select)
                 ->fetch();
@@ -96,7 +96,11 @@ class Model extends Nette\Object
     }
 
     public function insertTeam(array $data) {
-        return $this->getTeam()
+        return $this->getTeams()
                 ->insert($data);
+    }
+
+    public function flushTeamChange($teamId) {
+        $this->database->query("UPDATE `teams` SET changed = CURRENT_TIMESTAMP WHERE `id` = " . $teamId);
     }
  }

@@ -25,6 +25,10 @@ class ApiJSON {
         return $instance;
     }
 
+    public function has($key) {
+        return isset($this->json->$key);
+    }
+
     public function get($key) {
         if (isset($this->json->$key))
             return $this->json->$key;

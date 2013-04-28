@@ -26,5 +26,6 @@ CREATE TABLE `user_teams`(
      `userId` INT(10) UNSIGNED NOT NULL ,     
      `teamId` INT(10) UNSIGNED NOT NULL ,     
      `state` INT(1) UNSIGNED NOT NULL DEFAULT 0,     
-     `reason` VARCHAR(200) DEFAULT ''   
+     `reason` VARCHAR(200) DEFAULT '',
+     PRIMARY KEY (`userId`, `teamId`)
 )  ENGINE=INNODB COMMENT='' ROW_FORMAT=DEFAULT  ;

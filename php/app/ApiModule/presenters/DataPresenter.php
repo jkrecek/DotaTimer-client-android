@@ -4,7 +4,7 @@ namespace ApiModule;
 class DataPresenter extends ApiPresenter {
 
     /** @var User */
-    private $user;
+    /*private $user;
 
     //private $password;
 
@@ -18,8 +18,8 @@ class DataPresenter extends ApiPresenter {
         $team = Team::fromDbUsersTeam($this->user, true, $this->id, $this->model, $updateSince);
         $team->replaceUserIdsWithNames($this->model);
 
-        $this->sendResponse(new \Nette\Application\Responses\TextResponse(json_encode($team)));
-        $this->responser->OK(json_decode(json_encode($team)));
+        $this->response = ApiJSON::load(json_encode($team));
+        $this->responser->OK();
     }
 
     final protected function handleCreate() {
@@ -42,24 +42,24 @@ class DataPresenter extends ApiPresenter {
         if (self::getVar($this->request, Tags::TAG_TIMER)) {
             $timerTarget = self::getVar($this->request, Tags::TAG_TIMER);
 
-        // timer
-        $newTimerObj = new JSONObject();
-        self::setVar($newTimerObj, Tags::TAG_VALUE, $timerTarget);
-        self::setVar($newTimerObj, Tags::TAG_NICK, $this->nick);
-        self::setVar($this->json, Tags::TAG_TIMER, $newTimerObj);
+            // timer
+            $newTimerObj = new JSONObject();
+            self::setVar($newTimerObj, Tags::TAG_VALUE, $timerTarget);
+            self::setVar($newTimerObj, Tags::TAG_NICK, $this->nick);
+            self::setVar($this->json, Tags::TAG_TIMER, $newTimerObj);
 
-        // delete
-        $newDeleteObj = new JSONObject();
-        self::setVar($newDeleteObj, Tags::TAG_VALUE);
-        self::setVar($newDeleteObj, Tags::TAG_NICK);
-        self::setVar($this->json, Tags::TAG_DELETE, $newDeleteObj);
+            // delete
+            $newDeleteObj = new JSONObject();
+            self::setVar($newDeleteObj, Tags::TAG_VALUE);
+            self::setVar($newDeleteObj, Tags::TAG_NICK);
+            self::setVar($this->json, Tags::TAG_DELETE, $newDeleteObj);
 
-        // users
-        $allUsers = self::getVar($this->json, Tags::TAG_USERS);
-        foreach ($allUsers as $user) {
-            self::setVar($user, Tags::TAG_STATE);
-            self::setVar($user, Tags::TAG_REASON);
-        }
+            // users
+            $allUsers = self::getVar($this->json, Tags::TAG_USERS);
+            foreach ($allUsers as $user) {
+                self::setVar($user, Tags::TAG_STATE);
+                self::setVar($user, Tags::TAG_REASON);
+            }
         } elseif(self::getVar($this->request, Tags::TAG_DELETE)) {
             $deleteReason = self::getVar($this->request, Tags::TAG_DELETE);
 
@@ -93,8 +93,6 @@ class DataPresenter extends ApiPresenter {
 
         $account = $this->request->get(Tags::TAG_ACCOUNT);
         $authToken = $this->request->get(Tags::TAG_AUTH_TOKEN);
-        if (!$account || !$authToken)
-            throw new BadRequestException("User must indentify with his account and authToken.");
 
         $dbUserData = $this->model->getUserByAccount($account, $authToken);
 
@@ -104,7 +102,7 @@ class DataPresenter extends ApiPresenter {
         $this->user = User::fromDb($dbUserData);
     }
 
-    /*private function loadLocalJSON() {
+    *//*private function loadLocalJSON() {
         if ($this->json == NULL) {
             $filename =  $this->getRouteToJSON($this->id);
             if (file_exists($filename)) {
@@ -116,7 +114,7 @@ class DataPresenter extends ApiPresenter {
         }
 
         return $this->json;
-    }*/
+    }*//*
 
     private function checkPassword() {
         $receivedPass = $this->password;
@@ -189,5 +187,5 @@ class DataPresenter extends ApiPresenter {
         $file = fopen($this->getRouteToJSON($this->id), "w");
         fwrite($file, json_encode($this->json));
         fclose($file);
-    }
+    }*/
 }
