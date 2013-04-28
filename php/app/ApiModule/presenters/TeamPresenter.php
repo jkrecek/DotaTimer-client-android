@@ -2,6 +2,8 @@
 
 namespace ApiModule;
 
+use \Nette\DateTime;
+
 class TeamPresenter extends SecuredPresenter {
 
     protected function handleShared() {
@@ -35,7 +37,7 @@ class TeamPresenter extends SecuredPresenter {
     }
 
     protected function handleRead() {
-        $changed = $this->request->get(Tags::TAG_CHANGED);
+        $changed = (int)$this->request->get(Tags::TAG_CHANGED);
 
         $teamRow = $this->model->getTeamByCredentials($this->id, NULL, $changed);
         if (empty($teamRow))
@@ -47,7 +49,7 @@ class TeamPresenter extends SecuredPresenter {
         if (!$teamRow->isModified)
             throw new NotModifiedException();
 
-        $team = Team::fromDb($teamRow, $this->model);
+        $team = Team::fromDb($this->model->getTeams()->find($teamRow->id)->fetch(), $this->model);
         $team->toOutputForm($this->model);
         $this->responser->OK($team);
     }
@@ -61,10 +63,10 @@ class TeamPresenter extends SecuredPresenter {
             throw new ForbiddenException("User is not a member of the team");
 
         if ($this->request->has(Tags::TAG_TIMER)) {
-            $timer = $this->request->has(Tags::TAG_TIMER);
+            $timer = (int)$this->request->has(Tags::TAG_TIMER);
 
             $this->model->getTeams()->where("id", $teamRow->id)->update(array(
-                "timerVal" => $timer,
+                "timerVal" => DateTime::from($timer),
                 "timerAuthor" => $this->user->id,
                 "deleteVal" => NULL,
                 "deleteAuthor" => NULL
@@ -76,15 +78,15 @@ class TeamPresenter extends SecuredPresenter {
             ));
         }
         elseif ($this->request->has(Tags::TAG_DELETE)) {
-            $delete = $this->request->get(Tags::TAG_DELETE);
+            $delete = (int)$this->request->get(Tags::TAG_DELETE);
 
             $this->model->getTeams()->where("id", $teamRow->id)->update(array(
-                "deleteVal" => $delete,
+                "deleteVal" => DateTime::from($delete),
                 "deleteAuthor" => $this->user->id
             ));
         }
         elseif ($this->request->has(Tags::TAG_STATE)) {
-            $state = $this->request->get(Tags::TAG_STATE);
+            $state = (int)$this->request->get(Tags::TAG_STATE);
             $reason = $this->request->has(Tags::TAG_REASON) ? $this->request->get(Tags::TAG_REASON) : "";
 
             $this->model->getTeamUsers()->where(array(
@@ -96,7 +98,7 @@ class TeamPresenter extends SecuredPresenter {
             ));
         }
 
-        $team = Team::fromDb($this->model->getTeams()->find($team->id), $this->model);
+        $team = Team::fromDb($this->model->getTeams()->find($teamRow->id)->fetch(), $this->model);
         $team->toOutputForm($this->model);
         $this->responser->Accepted($team);
     }

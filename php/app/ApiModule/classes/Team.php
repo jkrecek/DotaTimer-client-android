@@ -105,6 +105,7 @@ class Team extends \stdClass {
         $team = new Team();
         $team->id = $row->id;
         $team->name = $row->name;
+        $team->changed = $row->changed;
 
         if (!empty($row->timerVal) && !empty($row->timerAuthor))
             $team->timer = ValueAuthorPair::create($row->timerVal, $row->timerAuthor);

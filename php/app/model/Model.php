@@ -1,5 +1,7 @@
 <?php
 
+use Nette\DateTime;
+
 class Model extends Nette\Object
 {
     /** @var Nette\Database\Connection */
@@ -66,7 +68,7 @@ class Model extends Nette\Object
 
         $select = "id, name, timerVal, timerAuthor, deleteVal, deleteAuthor";
         if ($changed !== NULL)
-            $select .= ", changed > ". $changed . " AS isModified";
+            $select .= ", changed > '". DateTime::from((int)$changed) . "' AS isModified";
 
         return $this->getTeams()
                 ->where($where)
