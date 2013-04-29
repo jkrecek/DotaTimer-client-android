@@ -19,4 +19,6 @@ local.properties
 .classpath
 .project
 .settings/
-/DotaTimer-web/nbproject/
+
+# linux files
+.directory
