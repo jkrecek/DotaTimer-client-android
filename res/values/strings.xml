@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DotaTimer</string>
+    <string name="menu_change_account">Změnit účet</string>
+    <string name="menu_change_display_name">Změnit přezdívku</string>
+    <string name="menu_settings">Nastavení</string>
+    <string name="no_time_set">Timer nenastaven</string>
+    <string name="no_input">-- nezadáno --</string>
+    <string name="alert">Upozornění</string>
+    <string name="fields_not_filled">Bez správného vyplnění všech položek v nastavení nebude aplikace plně fungovat. Opravdu chcete aplikaci ukončit?</string>
+    <string name="logo">Logo</string>
+    <string name="add_team">+ Přidat team</string>
+
+</resources>

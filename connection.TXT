@@ -1,0 +1,81 @@
+User create: {
+  invoked by: LoginActivity
+  request: {
+    mail,
+    googleToken,
+    display name
+  }
+  response: {
+    create: {
+      201, authtoken
+    }
+    exists: {
+      403
+    }
+  }
+}
+
+User login {
+  invoked by: LoginActivity
+  request: {
+    mail,
+    googleToken
+  }
+  response: {
+    login: {
+      201, apptoken, teams
+    }
+    wrong pass: {
+      403
+    }
+  }
+}
+
+Team Data {
+  invoked by: Context
+  request: {
+    account,
+    authtoken,
+    team_name,
+    changed
+  }
+  response: {
+    
+  }  
+}
+
+Team Login {
+  invoked by: TODO
+  request: {
+    account,
+    authtoken,
+    team_name,
+    team_pass
+  }
+  response: {
+    ok: {
+      200,
+      
+    }
+    wrong_pass: {
+      403,
+      
+    } 
+  }  
+}
+
+Team Update {
+  invoked by: Context (Various)
+  request: {
+    account,
+    authtoken,
+    team_name,
+    update_fields: {
+      update/
+      state+reason/
+      delete_reason
+    }
+  }
+  response: {
+  }
+}  
